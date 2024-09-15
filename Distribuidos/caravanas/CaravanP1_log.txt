@@ -1,0 +1,1 @@
+Fecha: 2024-09-15 16:12:47, ID Paquete: 0001, Tipo: Ostronitas, Valor: 200.00, Escolta: , Destino: Destino1, Intentos: 2, Estado: Delivered

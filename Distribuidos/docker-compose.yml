@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  konzu:
+    build:
+      context: ./konzu
+      dockerfile: Dockerfile
+    container_name: konzu_container
+    ports:
+      - "50051:50051"
+      - "50053:50053"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  raquis:
+    build:
+      context: ./raquis
+      dockerfile: Dockerfile
+    container_name: raquis_container
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: rabbitmq_container
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  caravanas:
+    build:
+      context: ./caravanas
+      dockerfile: Dockerfile
+    container_name: caravanas_container
+    ports:
+      - "50052:50052"
+
+  clientes:
+    build:
+      context: ./clientes
+      dockerfile: Dockerfile
+    container_name: clientes_container
+    stdin_open: true
+    tty: true
+    depends_on:
+      - konzu

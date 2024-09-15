@@ -1,0 +1,28 @@
+syntax = "proto3";
+option go_package = "grpc-server/proto";
+package customers;
+
+service ClientService{
+  rpc CreateOrder (OrderRequest) returns (OrderResponse);
+  rpc CheckStatus (TrackingRequest) returns (StatusResponse);
+}
+message OrderRequest {
+  string packageId = 1;
+  string typeOrder = 2;
+  string content = 3;
+  float price = 4;
+  string escort = 5;
+  string destination = 6;
+}
+
+message OrderResponse {
+  string trackingId = 1;
+}
+
+message TrackingRequest {
+  string trackingId = 1;
+}
+message  StatusResponse {
+  string status = 1;
+  int32 attempts =2;
+}

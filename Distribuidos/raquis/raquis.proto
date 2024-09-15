@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package raquis;
+
+// The finance service definition.
+service Finance {
+  // Retrieves financial summary reports
+  rpc GetFinancialSummary (SummaryRequest) returns (SummaryResponse);
+}
+
+// The request message for the summary
+message SummaryRequest {
+  // Placeholder for future use
+  string placeholder = 1;
+}
+
+// The response message containing the summary details
+message SummaryResponse {
+  int32 completed_deliveries = 1;
+  int32 total_attempts = 2;
+  int32 failed_deliveries = 3;
+  int32 total_credits_gained = 4;
+  int32 total_credits_lost = 5;
+}

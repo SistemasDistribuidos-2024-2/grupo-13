@@ -1,0 +1,39 @@
+syntax = "proto3";
+option go_package = "grpc-server/proto";
+package caravans;
+
+service CaravanService {
+  rpc AssignPackage (PackageRequest) returns (PackageResponse);
+  rpc ReportStatus (StatusRequestCaravana) returns (StatusResponseCaravana);
+  rpc CheckCaravanStatus (EmptyRequest) returns (CaravanStatusResponse);
+}
+
+message PackageRequest {
+  string package_id = 1;
+  string package_type = 2;
+  string destination = 3;
+  float value = 4;
+  string escort = 5;
+}
+
+message PackageResponse {
+  string message = 1;
+}
+
+message StatusRequestCaravana{
+  string packageId = 1;
+  string status=2;
+  int32 attempts=3;
+
+}
+message StatusResponseCaravana {
+  string message = 1;
+}
+
+message EmptyRequest {}
+
+message CaravanStatusResponse {
+  bool caravan_P_1 = 1;
+  bool caravan_P_2 = 2;
+  bool caravan_N = 3;
+}
