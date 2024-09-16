@@ -1,0 +1,4 @@
+Instrucciones de ejecución:
+Ejecuta docker-compose up --build dentro de la carpeta distribuidos.
+
+Esto asegura que los servicios se levanten de manera ordenada y en el orden correcto, tal como está definido en el archivo de configuración de Docker Compose.
