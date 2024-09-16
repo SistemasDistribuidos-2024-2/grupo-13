@@ -1,7 +1,7 @@
 # Grupo 13
 
 ### Integrantes:
-- **Martín Pino** | Rol:
+- **Martín Pino** | Rol: 202073528-K
 - **Luciano Yevenes** | Rol: 202173514-3
 
 ### Descripción:
@@ -17,3 +17,7 @@ Todos los códigos fuente están organizados en la carpeta `distribuidos`.
 
 ### Instrucciones de ejecucion:
 Ejecutar `docker-compose up --build` dentro de la carpeta `distribuidos`. 
+
+### Consideraciones:
+- En clientes se despliega una terminal para poder preguntar por el estado de un paquete, deben solo seguir la interfaz de esta, la cual es auto descriptiva.
+- Los paquetes se envian automaticamente en segundo plano.

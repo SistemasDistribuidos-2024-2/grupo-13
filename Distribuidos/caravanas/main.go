@@ -19,7 +19,7 @@ const (
 	serverRemoteAddress = "konzu_container:50053"
 )
 
-var waitingTimeForSecondPackage = 5 * time.Second
+var waitingTimeForSecondPackage = os.Getenv("TIEMPO_OPERACION") * time.Second
 
 type Caravan struct {
 	Id       string

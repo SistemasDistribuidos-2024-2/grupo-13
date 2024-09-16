@@ -56,7 +56,7 @@ run-caravanas:
 run-clientes:
 	@echo "Iniciando contenedor de Clientes..."
 	docker run -d --name $(CLIENTES_CONTAINER) \
-		--stdin-open --tty \
+		-it \
 		$(CLIENTES_IMAGE)
 	@echo "Contenedor de Clientes en ejecución."
 
