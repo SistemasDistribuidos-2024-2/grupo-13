@@ -41,6 +41,8 @@ services:
     container_name: caravanas_container
     ports:
       - "50052:50052"
+    environment:
+      - TIEMPO_OPERACION=3
 
   clientes:
     build:
@@ -49,5 +51,7 @@ services:
     container_name: clientes_container
     stdin_open: true
     tty: true
+    environment:
+      - TIEMPO_OPERACION=2
     depends_on:
       - konzu
