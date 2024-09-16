@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -19,7 +20,7 @@ const (
 	serverRemoteAddress = "konzu_container:50053"
 )
 
-var waitingTimeForSecondPackage = os.Getenv("TIEMPO_OPERACION") * time.Second
+var waitingTimeForSecondPackage time.Duration 
 
 type Caravan struct {
 	Id       string
@@ -208,6 +209,21 @@ func (s *server) CheckCaravanStatus(ctx context.Context, req *pb.EmptyRequest) (
 }
 
 func main() {
+	waitingTimeStr := os.Getenv("TIEMPO_OPERACION")
+
+	if waitingTimeStr == "" {
+		waitingTimeForSecondPackage = 5 * time.Second
+	} else {
+		waitingTime, err := strconv.Atoi(waitingTimeStr)
+		if err != nil {
+			fmt.Printf("Error al convertir TIEMPO_OPERACION: %v\n", err)
+			waitingTimeForSecondPackage = 5 * time.Second
+		} else {
+			waitingTimeForSecondPackage = time.Duration(waitingTime) * time.Second
+		}
+	}
+
+	fmt.Printf("Tiempo de espera para el segundo paquete: %v\n", waitingTimeForSecondPackage)
 
 	rand.Seed(time.Now().UnixNano())
 	conn, err := grpc.Dial(serverRemoteAddress, grpc.WithInsecure())

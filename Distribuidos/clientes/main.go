@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -107,7 +108,7 @@ func createOrder(client pb.ClientServiceClient, pkg Package) string {
 	return res.TrackingId
 }
 
-func sendPackagesInBackground(client pb.ClientServiceClient, packages []Package) {
+func sendPackagesInBackground(client pb.ClientServiceClient, packages []Package, delayBetweenPackages time.Duration) {
 	for _, pkg := range packages {
 		trackingId := createOrder(client, pkg)
 
@@ -118,7 +119,7 @@ func sendPackagesInBackground(client pb.ClientServiceClient, packages []Package)
 		})
 		sentPackages.Unlock()
 
-		time.Sleep(2 * time.Second)
+		time.Sleep(delayBetweenPackages) // Aquí usamos el valor de delay entre paquetes
 	}
 }
 
@@ -154,6 +155,22 @@ func checkStatus(client pb.ClientServiceClient, trackingId string) {
 }
 
 func main() {
+	waitingTimeStr := os.Getenv("TIEMPO_ESPERA_ENVIO")
+
+	var delayBetweenPackages time.Duration = 2 * time.Second
+
+
+	if waitingTimeStr != "" {
+		waitingTime, err := strconv.Atoi(waitingTimeStr)
+		if err != nil {
+			fmt.Printf("Error al convertir TIEMPO_ESPERA_ENVIO: %v\n", err)
+		} else {
+			delayBetweenPackages = time.Duration(waitingTime) * time.Second
+		}
+	}
+
+	fmt.Printf("El tiempo de espera entre paquetes es de: %v\n", delayBetweenPackages)
+
 	conn, err := grpc.Dial(serverAddress, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Error dialing: %v", err)
@@ -172,7 +189,8 @@ func main() {
 		log.Fatalf("Error reading packages file: %v", err)
 	}
 
-	go sendPackagesInBackground(client, packages)
+	// Usar la variable de entorno para el delay
+	go sendPackagesInBackground(client, packages, delayBetweenPackages)
 
 	scanner := bufio.NewScanner(os.Stdin)
 
