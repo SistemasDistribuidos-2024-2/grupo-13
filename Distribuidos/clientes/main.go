@@ -155,7 +155,7 @@ func checkStatus(client pb.ClientServiceClient, trackingId string) {
 }
 
 func main() {
-	waitingTimeStr := os.Getenv("TIEMPO_ESPERA_ENVIO")
+	waitingTimeStr := os.Getenv("TIEMPO_OPERACION")
 
 	var delayBetweenPackages time.Duration = 2 * time.Second
 
@@ -163,7 +163,7 @@ func main() {
 	if waitingTimeStr != "" {
 		waitingTime, err := strconv.Atoi(waitingTimeStr)
 		if err != nil {
-			fmt.Printf("Error al convertir TIEMPO_ESPERA_ENVIO: %v\n", err)
+			fmt.Printf("Error al convertir TIEMPO_OPERACION: %v\n", err)
 		} else {
 			delayBetweenPackages = time.Duration(waitingTime) * time.Second
 		}
