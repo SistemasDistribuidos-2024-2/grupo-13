@@ -189,7 +189,6 @@ func (s *caravanServiceServer) ReportStatus(ctx context.Context, req *pb.StatusR
 			todosPaquetes[i].Intentos = int(req.Attempts)
 			log.Printf("Paquete %s actualizado con estado: %s e intentos: %d", req.PackageId, req.Status, req.Attempts)
 
-			log.Println(todosPaquetes[i])
 			go enviarMensajeAFinanzas(todosPaquetes[i], false)
 
 			break
