@@ -37,12 +37,13 @@ Ejecutar `docker-compose up --build` dentro de la carpeta `distribuidos`.
   
 - Ejemplo del formato con nombre de `packages.txt` (igualmente hay un ejemplo cargado en `.\Distribuidos\clientes`):
 
-
-    0001,Ostronitas,Choripán,200,Escolta1,Destino1,
-    0002,Normal,Anticucho,450,Escolta2,Destino5,
-    0003,Prioritario,Pan,100,Escolta1,Destino2,
-    0004,Prioritario,Coca-Cola,75,Escolta2,Destino1,
-    0005,Prioritario,Coca-Cola,100,Carlos,Destino1,
-    0006,Normal,Coca-Cola,100,Carlos,Destino1,
-    0007,Ostronitas,Coca-Cola,100,Carlos,Destino1,
-    0008,Ostronitas,Coca-Cola,100,Carlos,Destino1,
+````
+0001,Ostronitas,Choripán,200,Escolta1,Destino1,
+0002,Normal,Anticucho,450,Escolta2,Destino5,
+0003,Prioritario,Pan,100,Escolta1,Destino2,
+0004,Prioritario,Coca-Cola,75,Escolta2,Destino1,
+0005,Prioritario,Coca-Cola,100,Carlos,Destino1,
+0006,Normal,Coca-Cola,100,Carlos,Destino1,
+0007,Ostronitas,Coca-Cola,100,Carlos,Destino1,
+0008,Ostronitas,Coca-Cola,100,Carlos,Destino1,
+````
