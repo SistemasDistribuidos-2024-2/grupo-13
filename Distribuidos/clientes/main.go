@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	serverAddress = "konzu_container:50051"
+	serverAddress = "dist049:50051"
 )
 
 type Package struct {
@@ -158,7 +158,6 @@ func main() {
 	waitingTimeStr := os.Getenv("TIEMPO_OPERACION")
 
 	var delayBetweenPackages time.Duration = 2 * time.Second
-
 
 	if waitingTimeStr != "" {
 		waitingTime, err := strconv.Atoi(waitingTimeStr)

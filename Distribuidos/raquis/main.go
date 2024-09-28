@@ -22,7 +22,7 @@ var balanceFinal float64
 var mu sync.Mutex
 
 func main() {
-	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq_container:5672/")
+	conn, err := amqp.Dial("amqp://guest:guest@dist049:5672/")
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
 	}

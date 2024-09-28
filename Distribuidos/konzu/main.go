@@ -346,7 +346,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterClientServiceServer(grpcServer, &clientServiceServer{})
 
-	clientConn, err = grpc.Dial("caravanas_container:50052", grpc.WithInsecure())
+	clientConn, err = grpc.Dial("dist051:50052", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Error al conectar con el servidor de caravanas: %v", err)
 	}

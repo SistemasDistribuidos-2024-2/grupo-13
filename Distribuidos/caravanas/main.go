@@ -17,10 +17,10 @@ import (
 
 const (
 	serverAddress       = "caravanas_container:50052"
-	serverRemoteAddress = "konzu_container:50053"
+	serverRemoteAddress = "dist049:50053"
 )
 
-var waitingTimeForSecondPackage time.Duration 
+var waitingTimeForSecondPackage time.Duration
 
 type Caravan struct {
 	Id       string
