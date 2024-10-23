@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package digimon;
+
+option go_package = "regional_server/pkg/grpc/protobuf;protobuf";
+
+service PrimaryNode {
+  rpc ReceiveEncryptedMessage (EncryptedMessage) returns (Empty);
+}
+
+message EncryptedMessage {
+  string encrypted_data = 1;
+}
+
+message Empty {}
