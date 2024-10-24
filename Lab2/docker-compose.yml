@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  primary-node:
+    build:
+      context: ./MV4/Primary Node
+      dockerfile: Dockerfile
+    container_name: primary_node_container
+    ports:
+      - "50053:50053"
+
+  data-node-1:
+    build:
+      context: ./MV1/Data Node 1
+      dockerfile: Dockerfile
+    container_name: data_node_1_container
+    ports:
+      - "50054:50054"
+
+  data-node-2:
+    build:
+      context: ./MV3/Data Node 2
+      dockerfile: Dockerfile
+    container_name: data_node_2_container
+    ports:
+      - "50055:50055"
+
+  diaboromon:
+    build:
+      context: ./MV2/Diaboromon
+      dockerfile: Dockerfile
+    container_name: diaboromon_container
+    ports:
+      - "50051:50051"
+
+  tai:
+    build:
+      context: ./MV4/Nodo Tai
+      dockerfile: Dockerfile
+    container_name: tai_container
+    ports:
+      - "50052:50052"
+    stdin_open: true
+    tty: true
+
+  isla-file:
+    build:
+      context: ./MV1/Isla File
+      dockerfile: Dockerfile
+    container_name: isla_file_container
+
+  continente-folder:
+    build:
+      context: ./MV2/Continente Folder
+      dockerfile: Dockerfile
+    container_name: continente_folder_container
+
+  continente-server:
+    build:
+      context: ./MV3/Continente Server
+      dockerfile: Dockerfile
+    container_name: continente_server_container
