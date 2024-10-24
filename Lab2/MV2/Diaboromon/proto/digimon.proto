@@ -1,0 +1,35 @@
+syntax = "proto3";
+option go_package = "grpc-server/proto";
+package digimon;
+
+// Servicio hospedado por Diaboromon
+service DiaboromonService {
+  // Tai señala a Diaboromon para iniciar
+  rpc StartDiaboromon(Empty) returns (StartResponse);
+  // Tai ataca a Diaboromon
+  rpc AttackDiaboromon(AttackRequest) returns (AttackResponse);
+}
+
+// Servicio hospedado por Tai
+service TaiService {
+  // Diaboromon ataca a Tai
+  rpc DiaboromonAttack(Empty) returns (AttackResponse);
+}
+
+// Mensaje vacío
+message Empty {}
+
+// Respuesta para StartDiaboromon
+message StartResponse {
+  string message = 1;
+}
+
+// Solicitud para atacar a Diaboromon
+message AttackRequest {
+  int32 attack_value = 1;
+}
+
+// Respuesta indicando éxito o fracaso
+message AttackResponse {
+  bool success = 1;
+}
