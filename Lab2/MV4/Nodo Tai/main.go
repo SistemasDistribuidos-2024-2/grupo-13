@@ -31,6 +31,7 @@ func (s *servidorTai) DiaboromonAttack(ctx context.Context, req *pb.Empty) (*pb.
 	defer s.mu.Unlock()
 	s.vida -= 10
 	fmt.Println("Diaboromon ha atacado, restando 10 puntos de vida")
+	fmt.Println("Vida restante: ", s.vida)
 	if s.vida <= 0 {
 		fmt.Println("Diaboromon ha ganado")
 		// Responder true al ataque final de Diaboromon
@@ -183,6 +184,7 @@ func main() {
 				fmt.Println("Diaboromon repelió el ataque")
 				s.mu.Lock()
 				s.vida -= 10
+				fmt.Println("Vida restante: ", s.vida)
 				if s.vida <= 0 {
 					s.mu.Unlock()
 					fmt.Println("Diaboromon ha ganado")
