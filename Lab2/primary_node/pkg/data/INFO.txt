@@ -1,0 +1,25 @@
+78349,2,Pteromon,true
+5809,1,Coronamon,true
+37833,2,Sistermon Blanc,true
+1237,2,Pulsemon,true
+5024,1,Bulucomon,true
+97810,1,Junkmon,false
+73008,1,Impmon,false
+84026,1,Dracomon,false
+58994,1,Floramon,true
+38748,2,Palmon,true
+20333,2,Salamon,true
+81825,1,KoDokugumon,false
+71269,1,Biyomon,true
+51870,1,Ignitemon,false
+55565,2,Sistermon Blanc (Awake.),false
+69497,2,Phascomon,false
+89850,1,ModokiBetamon,true
+5048,1,Kokuwamon,false
+96879,2,Zubamon,true
+84827,1,Morphomon,true
+34527,2,PawnChessmon (White),true
+68613,2,SnowGoblimon,true
+81777,1,Kunemon,true
+80165,2,Shoutmon,false
+12545,2,Salamon (X Antibody),true
