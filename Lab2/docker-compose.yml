@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  primary_node:
+    build: ./primary_node
+    ports:
+      - "50051:50051"
+
+  regional_server:
+    build: ./regional_server
+    ports:
+      - "50056:50056"
