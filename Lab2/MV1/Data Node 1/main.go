@@ -17,7 +17,6 @@ import (
 	pb "grpc-server/proto/grpc-server/proto"
 )
 
-// Servidor que implementa los métodos del Data Node
 type server struct {
 	pb.UnimplementedDataNodeServiceServer
 	mu             sync.Mutex
@@ -26,13 +25,11 @@ type server struct {
 	grpcServer     *grpc.Server
 }
 
-// Método para almacenar la información del Digimon recibida desde el Primary Node
 func (s *server) StoreDigimon(ctx context.Context, in *pb.DigimonInfo) (*pb.StoreDigimonResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	fmt.Printf("[DATA NODE %d] Recibida informacion de primary node: ID=%d.\n", s.dataNodeNumber, in.Id)
-	// Abrir el archivo en modo de escritura
 	file, err := os.OpenFile(s.filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Printf("Error al abrir el archivo: %v", err)
@@ -45,7 +42,6 @@ func (s *server) StoreDigimon(ctx context.Context, in *pb.DigimonInfo) (*pb.Stor
 		}
 	}(file)
 
-	// Escribir la información en el archivo
 	_, err = file.WriteString(fmt.Sprintf("%d,%s\n", in.Id, in.Attribute))
 	if err != nil {
 		log.Printf("Error al escribir en el archivo: %v", err)
@@ -55,15 +51,12 @@ func (s *server) StoreDigimon(ctx context.Context, in *pb.DigimonInfo) (*pb.Stor
 	return &pb.StoreDigimonResponse{Message: "Success"}, nil
 }
 
-// Método para devolver el atributo del Digimon solicitado por el Primary Node
 func (s *server) GetDigimonAttribute(ctx context.Context, in *pb.DigimonRequest) (*pb.DigimonResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// Imprimir solicitud recibida
 	fmt.Printf("[DATA NODE %d] Solicitud de Primary Node recibida: ID=%d.\n", s.dataNodeNumber, in.Id)
 
-	// Abrir el archivo para lectura
 	file, err := os.Open(s.filename)
 	if err != nil {
 		log.Printf("Error al abrir el archivo: %v", err)
@@ -76,7 +69,6 @@ func (s *server) GetDigimonAttribute(ctx context.Context, in *pb.DigimonRequest)
 		}
 	}(file)
 
-	// Leer el archivo línea por línea
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -90,7 +82,6 @@ func (s *server) GetDigimonAttribute(ctx context.Context, in *pb.DigimonRequest)
 				continue
 			}
 			if int32(id) == in.Id {
-				// Atributo encontrado
 				fmt.Printf("[DATA NODE %d] Respuesta enviada al Primary Node: Atributo=%s.\n", s.dataNodeNumber, attribute)
 				return &pb.DigimonResponse{Attribute: attribute}, nil
 			}
@@ -101,7 +92,6 @@ func (s *server) GetDigimonAttribute(ctx context.Context, in *pb.DigimonRequest)
 		return nil, err
 	}
 
-	// Si no se encontró el atributo
 	fmt.Printf("[DATA NODE %d] Respuesta enviada al Primary Node: Atributo no encontrado.\n", s.dataNodeNumber)
 	return nil, fmt.Errorf("Atributo no encontrado para ID %d", in.Id)
 }
@@ -117,7 +107,6 @@ func (s *server) Terminate(ctx context.Context, in *pb.TerminateRequest) (*pb.Te
 }
 
 func main() {
-	// Verificar argumentos de línea de comandos
 	if len(os.Args) < 2 {
 		log.Fatalf("Uso: %s <DataNodeNumber>", os.Args[0])
 	}
@@ -129,7 +118,6 @@ func main() {
 
 	filename := fmt.Sprintf("DATA_%d.txt", dataNodeNumber)
 
-	// Escuchar en el puerto correspondiente
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 50050+dataNodeNumber))
 	if err != nil {
 		log.Fatalf("Error al escuchar: %v", err)
@@ -144,7 +132,6 @@ func main() {
 
 	pb.RegisterDataNodeServiceServer(grpcServer, dataNodeServer)
 
-	// Manejar señales del sistema para una terminación segura
 	go func() {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt, syscall.SIGTERM)

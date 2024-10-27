@@ -4,14 +4,14 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
-	// Importa el paquete proto generado (reemplaza con tu ruta actual)
+
+	"google.golang.org/grpc"
 	pb "grpc-server/proto/grpc-server/proto"
 )
 
@@ -33,16 +33,35 @@ func (s *servidorTai) DiaboromonAttack(ctx context.Context, req *pb.Empty) (*pb.
 	fmt.Println("Diaboromon ha atacado, restando 10 puntos de vida")
 	fmt.Println("Vida restante: ", s.vida)
 	if s.vida <= 0 {
-		fmt.Println("Diaboromon ha ganado")
-		// Responder true al ataque final de Diaboromon
+		fmt.Println(`
+			██████╗ ███████╗██████╗ ██████╗  ██████╗ ████████╗ █████╗ 
+			██╔══██╗██╔════╝██╔══██╗██╔══██╗██╔═══██╗╚══██╔══╝██╔══██╗
+			██║  ██║█████╗  ██████╔╝██████╔╝██║   ██║   ██║   ███████║
+			██║  ██║██╔══╝  ██╔══██╗██╔══██╗██║   ██║   ██║   ██╔══██║
+			██████╔╝███████╗██║  ██║██║  ██║╚██████╔╝   ██║   ██║  ██║
+			╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝    ╚═╝   ╚═╝  ╚═╝
+			⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠏⠙⠋⠉⠛⠛⠛⢿⣿⣿⣿⣿⣿⣿⣿⣿
+			⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠏⣀⣀⠀⠀⠀⣀⣀⣀⡨⢿⣿⣿⣿⣿⣿⣿
+			⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⢠⣾⣿⣿⡷⠒⣾⣿⣿⣿⣿⡄⢿⣿⣿⣿⣿⣿
+			⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⣾⣿⣿⡿⣃⣼⣿⠿⣿⣿⣿⡇⣼⣿⣿⣿⣿⣿
+			⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠉⠉⠁⠀⠛⠉⢙⠁⠀⠀⠀⠠⣿⣿⣿⣿⣿⣿
+			⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣄⡀⠤⣂⣀⢀⡘⠺⠦⣄⣠⡤⣿⣿⣿⣿⣿⣿
+			⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡅⠈⡲⠄⠀⡖⠋⠙⠒⣾⠎⠇⢿⣿⣿⣿⣿⣿
+			⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⣷⡖⣮⠄⠀⠒⣲⣿⢸⣇⣿⣿⣿⣿⣿⣿
+			⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⢻⣿⠛⠉⠉⢲⣯⠇⣸⣿⣿⣿⣿⣿⣿⣿
+			⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠒⠛⠓⡦⢶⠟⠛⢒⣿⣿⣿⣿⣿⣿⣿⣿
+			⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣆⠀⠀⠀⠀⠑⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿
+			⣿⣿⣿⣿⠟⠋⠉⢹⠿⣿⣿⣿⠛⢿⣿⡷⠀⠒⠀⢾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+			⣿⣿⣿⣧⡀⠀⠀⢾⡀⠉⠉⠁⠀⠀⢀⣀⠀⠀⠀⠈⠁⠀⢻⡿⠟⠛⠟⠛⠉⠛
+			⣿⡿⠛⠛⠉⠂⠀⠀⠀⢀⡂⠓⠄⠀⠈⠉⠗⣉⠈⠁⠂⠀⠀⠈⠁⠀⠀⠀⠀⠀
+			⣿⡀⠀⠈⠆⠀⠀⠀⠀⠀⠉⠘⠐⠿⠿⠁⠀⠘⠃⠤⠤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+		`)
 		response := &pb.AttackResponse{Success: true}
-		// Iniciar proceso de término después de responder
 		go func() {
 			s.enviarSenalTermino("derrota")
 		}()
 		return response, nil
 	}
-	// Responder false para que Diaboromon continúe atacando
 	return &pb.AttackResponse{Success: false}, nil
 }
 
@@ -53,7 +72,6 @@ func (s *servidorTai) enviarSenalTermino(resultado string) {
 	} else {
 		fmt.Println("Señal de término enviada al Nodo Primario")
 	}
-	// Señal para terminar la ejecución
 	s.terminarChan <- struct{}{}
 }
 
@@ -74,7 +92,6 @@ func leerVI() (int32, error) {
 		if len(valores) < 5 {
 			return 0, fmt.Errorf("input.txt no tiene suficientes valores")
 		}
-		// Posiciones: PS=0, TE=1, TD=2, CD=3, VI=4
 		viFloat, err := strconv.ParseFloat(valores[4], 64)
 		if err != nil {
 			return 0, err
@@ -87,7 +104,6 @@ func leerVI() (int32, error) {
 }
 
 func main() {
-	// Leer vida inicial de Tai desde input.txt
 	VI, err := leerVI()
 	if err != nil {
 		log.Fatalf("Error al leer input.txt: %v", err)
@@ -99,7 +115,6 @@ func main() {
 	}
 	s.ctx, s.cancelar = context.WithCancel(context.Background())
 
-	// Inicia el servidor gRPC de Tai
 	go func() {
 		lis, err := net.Listen("tcp", ":50052")
 		if err != nil {
@@ -112,7 +127,6 @@ func main() {
 		}
 	}()
 
-	// Conecta con Diaboromon
 	connDiaboromon, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("No se pudo conectar con Diaboromon: %v", err)
@@ -120,7 +134,6 @@ func main() {
 	defer connDiaboromon.Close()
 	s.diaboromonClient = pb.NewDiaboromonServiceClient(connDiaboromon)
 
-	// Conecta con el Nodo Primario
 	connPrimaryNode, err := grpc.Dial("localhost:50053", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("No se pudo conectar con el Nodo Primario: %v", err)
@@ -128,21 +141,18 @@ func main() {
 	defer connPrimaryNode.Close()
 	s.primaryNodeClient = pb.NewPrimaryNodeServiceClient(connPrimaryNode)
 
-	// Envía señal de inicio a Diaboromon
 	_, err = s.diaboromonClient.StartDiaboromon(s.ctx, &pb.Empty{})
 	if err != nil {
 		log.Fatalf("Error al iniciar Diaboromon: %v", err)
 	}
 	fmt.Println("Tai ha enviado la señal de inicio a Diaboromon.")
 
-	// Gorutina para esperar la señal de término
 	go func() {
 		<-s.terminarChan
 		fmt.Println("Nodo Tai: Terminando ejecución.")
 		os.Exit(0)
 	}()
 
-	// Bucle para leer comandos desde la consola
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Println("Seleccione una opción:")
@@ -155,7 +165,6 @@ func main() {
 		entrada := strings.TrimSpace(scanner.Text())
 		switch entrada {
 		case "1":
-			// Solicitar datos al Nodo Primario
 			fmt.Println("Recolectando información de los Digimons...")
 			respuesta, err := s.primaryNodeClient.GetAttackData(s.ctx, &pb.TaiRequest{Message: "Solicitud de datos para ataque"})
 			if err != nil {
@@ -164,7 +173,6 @@ func main() {
 			}
 			datosRecolectados := respuesta.DataCollected
 
-			// Atacar a Diaboromon con los datos recolectados
 			fmt.Println("Nodo Tai atacó a Diaboromon")
 			ataqueRespuesta, err := s.diaboromonClient.AttackDiaboromon(s.ctx, &pb.AttackRequest{AttackValue: datosRecolectados})
 			if err != nil {
@@ -172,12 +180,38 @@ func main() {
 				continue
 			}
 			if ataqueRespuesta.Success {
-				fmt.Println("¡Nodo Tai ha ganado!")
-				// Enviar señal de término al Nodo Primario y terminar ejecución
+				fmt.Println(`
+					██╗   ██╗██╗ ██████╗████████╗ ██████╗ ██████╗ ██╗ █████╗ 
+					██║   ██║██║██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗██║██╔══██╗
+					██║   ██║██║██║        ██║   ██║   ██║██████╔╝██║███████║
+					╚██╗ ██╔╝██║██║        ██║   ██║   ██║██╔══██╗██║██╔══██║
+					 ╚████╔╝ ██║╚██████╗   ██║   ╚██████╔╝██║  ██║██║██║  ██║
+					  ╚═══╝  ╚═╝ ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝
+					⣘⠿⣿⣿⣿⣿⣿⣿⠋⠉⠀⠹⡌⢧⠀⠀⠀⠀⠀⠘⡦⣄⣀⡀⠀⠀⠀⠀⣠⣾⠖⠋⠀⠀⣠⣾⣿⣿⣿⣿⣿⣿
+					⢹⡦⣄⡉⠛⠿⣿⠁⠀⠀⠀⠀⢹⡜⣆⠀⠀⣀⡤⠖⠋⠀⠈⠉⠓⠦⣄⡀⠛⢳⣶⠤⠴⠞⣿⣿⣿⣿⣿⣿⣿⣿
+					⢸⣷⣮⣙⠶⣤⡈⠳⡄⠀⣠⠞⠁⠙⣼⣴⠮⠍⠀⠀⠀⠀⠠⠤⣤⣀⡀⠉⠳⣄⣨⡿⠓⡄⠸⣿⣿⣿⣿⣿⣿⣿
+					⢸⠿⠿⠛⢳⡶⠭⠷⢿⡜⠁⢀⡴⠞⢛⣠⠴⠚⠉⠀⠀⠀⠀⠀⠀⣀⣉⣟⣲⣦⣝⠛⠷⢦⣄⢻⣿⣿⣿⣿⣿⣿
+					⢸⢀⣀⣀⣸⠁⢻⣯⠟⢀⡴⣫⠴⠚⠉⠀⠀⠀⠀⠀⠀⠀⢀⡴⠊⢹⡟⢿⣿⣿⠻⡇⠈⠛⠻⢮⣿⣿⣿⡿⠻⢻
+					⢸⣿⣿⣿⣿⢀⣾⢏⣴⣷⡯⣅⡀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⢧⣤⣾⣿⡆⢿⣿⡆⡇⠀⠀⠀⠀⠈⢻⣴⠀⣀⣼
+					⢸⣿⣿⣿⣿⠚⢨⣿⣿⣏⢀⣠⣿⡷⣤⣀⠀⢀⣀⣴⣿⣿⣿⣇⠙⠛⠋⢀⣾⣿⡇⡇⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿
+					⢸⣿⣿⣿⣿⠀⢸⣿⣿⡌⠿⣿⡿⢳⡿⠛⢻⣩⠏⠉⠀⠈⠉⠙⠿⣶⡾⢽⣿⣿⡴⠃⠀⠀⣠⡤⠖⠒⠛⠋⠉⠉
+					⢸⣿⣿⣿⡟⠀⠀⢿⣿⣿⣤⣤⠞⠉⠀⠀⠸⠋⢀⣀⡤⠤⠤⣤⣀⣀⠉⠡⠈⠉⠀⠀⣠⣴⡏⠀⠀⠀⠀⠀⠀⠀
+					⢸⢛⣿⡟⠀⠀⠀⠈⠛⠿⠟⢁⡤⠖⠒⠒⢲⡞⠋⠀⠀⠀⠀⢀⣠⢦⠩⡝⠓⠲⣖⡋⢡⡿⠀⠀⠀⠀⠀⠀⠀⠀
+					⢸⣼⣿⠀⠀⣠⠶⠺⡗⠒⠚⠙⣦⣤⣀⠀⠀⣷⠀⠀⠀⣀⡴⣿⠁⢠⠆⣹⡞⠋⣹⣷⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀
+					⡼⣿⡟⢀⣞⡵⠖⠶⣿⠗⢸⣄⢻⢸⡟⠙⠶⢼⣦⠴⠋⠁⠀⠈⢦⣸⡴⢳⡇⠀⢿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀
+					⡇⠈⣿⣾⣯⣄⡉⠀⢹⣷⡈⢿⡷⣼⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣻⠀⢸⠃⠀⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀
+					⡇⠀⣿⣧⣭⣻⣿⣷⣶⣿⣷⡀⢳⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠇⠀⣿⠀⠀⣿⣿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀
+					⠃⠀⢸⣿⣧⣿⣿⣿⣿⣿⣿⣷⠀⢧⠀⠀⠀⢀⣤⢤⡀⠀⠀⢀⡟⠀⠀⠟⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+					⠀⠀⠈⡟⣏⣉⠙⠛⠛⢿⣿⣿⡆⠘⡆⠀⢠⡎⣼⠀⠙⢦⣠⣞⣀⣀⠀⠀⠀⠀⣿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+					⠀⠀⠀⢷⢹⡀⠀⠀⣴⣿⣿⣿⣧⠀⠹⠴⣏⠀⡇⠀⠀⢀⠟⠉⠉⠉⠁⠀⠀⢀⡏⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀
+					⠀⠀⠀⢸⠈⣧⠀⠀⠈⢹⣿⣿⣿⡀⠀⠀⠘⢦⡂⣀⣴⠋⠀⠀⣀⣤⣴⣶⣶⣿⠃⠀⠀⠀⠀⣀⡤⠖⠉⠀⠀⠀
+					⠀⠀⠀⠸⡇⢹⡄⠀⢶⣿⣿⣿⣿⣿⣷⣦⡀⠀⠉⢱⠃⣠⣴⣿⣿⣿⣿⣿⣿⡏⠀⠀⣠⠖⠋⠁⠀⠀⠀⠀⠀⠀
+					⠀⠀⠀⠀⢻⣌⠳⢦⣌⠙⣿⣿⣿⣿⣿⣿⣿⣶⣤⣉⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⠖⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+					⠀⠀⠀⠀⠀⠙⠻⣶⣽⣷⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣤⣤⠴⠒⠒⠒⠒⠒⠒⠀⠀
+				`)
 				go func() {
 					s.enviarSenalTermino("victoria")
 				}()
-				// Esperar a que se envíe la señal de término
 				<-s.terminarChan
 				os.Exit(0)
 			} else {
@@ -188,11 +222,9 @@ func main() {
 				if s.vida <= 0 {
 					s.mu.Unlock()
 					fmt.Println("Diaboromon ha ganado")
-					// Enviar señal de término al Nodo Primario y terminar ejecución
 					go func() {
 						s.enviarSenalTermino("derrota")
 					}()
-					// Esperar a que se envíe la señal de término
 					<-s.terminarChan
 					os.Exit(0)
 				}
@@ -207,7 +239,6 @@ func main() {
 		}
 	}
 
-	// Esperar a que se envíe la señal de término antes de salir
 	<-s.terminarChan
 	os.Exit(0)
 }
