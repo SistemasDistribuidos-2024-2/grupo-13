@@ -17,6 +17,11 @@ service DataNodeService {
   rpc Terminate (TerminateRequest) returns (TerminateResponse);
 }
 
+// Servicio del Servidor Regional
+service RegionalServerService {
+  rpc TerminateRegional (TerminateRequest) returns (TerminateResponse);
+}
+
 // Servicio de Diaboromon
 service DiaboromonService {
   rpc StartDiaboromon (Empty) returns (StartResponse);

@@ -18,92 +18,129 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Servidor Primary Node
-type server struct {
+type Server struct {
 	pb.UnimplementedPrimaryNodeServiceServer
-	dataNodeClient *DataNodeClient
+	DataNodeClient  *DataNodeClient
+	TaiClient       *TaiClient
+	RegionalClients *RegionalServerClients
+	QuitChan        chan bool // Exportado para acceso desde main.go
 }
 
-// Crear un nuevo servidor Primary Node
-func NewPrimaryNodeServer(client *DataNodeClient) (*server, error) {
+// NewPrimaryNodeServer crea una nueva instancia del servidor Primary Node
+func NewPrimaryNodeServer(dataNodeClient *DataNodeClient, taiClient *TaiClient, regionalClients *RegionalServerClients) (*Server, error) {
 	if err := data.InitInfoFile(); err != nil {
-		return nil, fmt.Errorf("error al inicializar INFO.txt: %v", err)
+		log.Printf("[ERROR][PRIMARY NODE] Error al inicializar INFO.txt: %v", err)
+		return nil, err
 	}
-	return &server{dataNodeClient: client}, nil
+	return &Server{
+		DataNodeClient:  dataNodeClient,
+		TaiClient:       taiClient,
+		RegionalClients: regionalClients,
+		QuitChan:        make(chan bool), // Inicialización del canal
+	}, nil
 }
 
-// Generar un ID único
+// generateID genera un ID único para los Digimon
 func generateID() int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(100000)
 }
 
-// Recibir y procesar mensajes encriptados
-func (s *server) ReceiveEncryptedMessage(ctx context.Context, msg *pb.EncryptedMessage) (*pb.Empty, error) {
+// ReceiveEncryptedMessage procesa mensajes encriptados desde los servidores regionales
+func (s *Server) ReceiveEncryptedMessage(ctx context.Context, msg *pb.EncryptedMessage) (*pb.Empty, error) {
 	decryptedMessage, err := crypto.DecryptAES(msg.EncryptedData)
 	if err != nil {
-		log.Printf("Error al desencriptar mensaje: %v", err)
+		log.Printf("[ERROR][PRIMARY NODE] Error al desencriptar mensaje: %v", err)
 		return nil, err
 	}
 
+	log.Printf("[PRIMARY NODE] Mensaje recibido: %s", decryptedMessage)
+
 	parts := strings.Split(decryptedMessage, ",")
 	if len(parts) != 3 {
+		log.Printf("[ERROR][PRIMARY NODE] Formato de mensaje incorrecto: %s", decryptedMessage)
 		return nil, fmt.Errorf("formato de mensaje incorrecto")
 	}
 
 	id := generateID()
 	name, attribute, status := parts[0], parts[1], parts[2]
+
 	dataNode := 1
 	if name[0] >= 'N' && name[0] <= 'Z' {
 		dataNode = 2
 	}
 
 	if err := data.WriteInfo(id, dataNode, name, status); err != nil {
+		log.Printf("[ERROR][PRIMARY NODE] Error al escribir en INFO.txt: %v", err)
 		return nil, err
 	}
 
-	if err := s.dataNodeClient.SendToDataNode(id, name, attribute); err != nil {
+	if err := s.DataNodeClient.SendToDataNode(id, name, attribute); err != nil {
+		log.Printf("[ERROR][PRIMARY NODE] Error al enviar datos al Data Node: %v", err)
 		return nil, err
 	}
 
-	log.Printf("Procesado: ID=%d, DataNode=%d, Nombre=%s, Estado=%s", id, dataNode, name, status)
+	log.Printf("[PRIMARY NODE] Procesado: ID=%d, DataNode=%d, Nombre=%s, Estado=%s", id, dataNode, name, status)
+
 	return &pb.Empty{}, nil
 }
 
-// Manejar la solicitud de Tai para obtener los datos acumulados
-func (s *server) GetAttackData(ctx context.Context, req *pb.TaiRequest) (*pb.AttackDataResponse, error) {
+// GetAttackData responde con la cantidad total de datos acumulados
+func (s *Server) GetAttackData(ctx context.Context, req *pb.TaiRequest) (*pb.AttackDataResponse, error) {
+	log.Println("[PRIMARY NODE] Solicitud de cantidad de datos acumulados recibida.")
+
+	totalData := s.calculateTotalData()
+	response := &pb.AttackDataResponse{DataCollected: int32(totalData)}
+
+	log.Printf("[PRIMARY NODE] Respuesta enviada: %d datos acumulados", response.DataCollected)
+
+	return response, nil
+}
+
+// calculateTotalData calcula la cantidad total de datos acumulados
+func (s *Server) calculateTotalData() float64 {
 	totalData := 0.0
 
 	file, err := os.Open("pkg/data/INFO.txt")
 	if err != nil {
-		return nil, fmt.Errorf("error al abrir INFO.txt: %v", err)
+		log.Printf("[ERROR][PRIMARY NODE] Error al abrir INFO.txt: %v", err)
+		return 0.0
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+
+		}
+	}(file)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
 		parts := strings.Split(line, ",")
-		if len(parts) != 4 {
+		if len(parts) != 4 || parts[3] != "Sacrificado" {
 			continue
 		}
 
 		id, _ := strconv.Atoi(parts[0])
-		status := parts[3]
-
-		if status == "Sacrificado" {
-			attribute, err := s.dataNodeClient.GetAttributeFromDataNode(id)
-			if err != nil {
-				return nil, err
-			}
-			totalData += calculateDataAmount(attribute)
+		attribute, err := s.DataNodeClient.GetAttributeFromDataNode(id)
+		if err != nil {
+			log.Printf("[ERROR][PRIMARY NODE] Error al obtener atributo del Data Node: %v", err)
+			continue
 		}
+
+		dataAmount := calculateDataAmount(attribute)
+		log.Printf("[PRIMARY NODE] Atributo %s -> %f datos", attribute, dataAmount)
+		totalData += dataAmount
 	}
 
-	return &pb.AttackDataResponse{DataCollected: int32(totalData)}, nil
+	if err := scanner.Err(); err != nil {
+		log.Printf("[ERROR][PRIMARY NODE] Error al leer INFO.txt: %v", err)
+	}
+
+	return totalData
 }
 
-// Calcular la cantidad de datos según el atributo del Digimon
+// calculateDataAmount devuelve el valor asociado a cada tipo de atributo
 func calculateDataAmount(attribute string) float64 {
 	switch attribute {
 	case "Vaccine":
@@ -117,16 +154,37 @@ func calculateDataAmount(attribute string) float64 {
 	}
 }
 
-// Iniciar el servidor gRPC
-func StartServer(address string, s *server) error {
+// SendTerminationSignal envía la señal de terminación a los servidores regionales y Data Nodes
+func (s *Server) SendTerminationSignal(ctx context.Context, req *pb.TerminateProcess) (*pb.TerminateResponse, error) {
+	log.Printf("[PRIMARY NODE] Señal de terminación recibida: %s", req.Result)
+
+	if err := s.DataNodeClient.TerminateDataNodes(); err != nil {
+		log.Printf("[ERROR][PRIMARY NODE] Error al terminar Data Nodes: %v", err)
+		return nil, err
+	}
+
+	if err := s.RegionalClients.TerminateAll(); err != nil {
+		log.Printf("[ERROR][PRIMARY NODE] Error al terminar Regional Servers: %v", err)
+		return nil, err
+	}
+
+	log.Println("[PRIMARY NODE] Todos los nodos y servidores han sido terminados.")
+	s.QuitChan <- true
+
+	return &pb.TerminateResponse{Message: "Terminación completada"}, nil
+}
+
+// StartServer inicia el servidor gRPC del Primary Node
+func StartServer(address string, s *Server) error {
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		return fmt.Errorf("error al iniciar el servidor: %v", err)
+		log.Printf("[ERROR][PRIMARY NODE] Error al iniciar el servidor: %v", err)
+		return err
 	}
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterPrimaryNodeServiceServer(grpcServer, s)
 
-	log.Printf("Servidor escuchando en %s", address)
+	log.Printf("[PRIMARY NODE] Servidor escuchando en %s", address)
 	return grpcServer.Serve(lis)
 }

@@ -18,7 +18,7 @@ import (
 // Cliente gRPC para enviar datos al Primary Node
 type Client struct {
 	conn     *grpc.ClientConn
-	client   pb.PrimaryNodeClient
+	client   pb.PrimaryNodeServiceClient
 	config   *data.InputConfig
 	digimons []models.Digimon
 }
@@ -29,7 +29,7 @@ func NewClient(address string, config *data.InputConfig, digimons []models.Digim
 		return nil, err
 	}
 
-	client := pb.NewPrimaryNodeClient(conn)
+	client := pb.NewPrimaryNodeServiceClient(conn)
 
 	return &Client{
 		conn:     conn,
@@ -39,11 +39,9 @@ func NewClient(address string, config *data.InputConfig, digimons []models.Digim
 	}, nil
 }
 
-// Encripta y envía un mensaje al Primary Node
 func (c *Client) SendEncryptedMessage(digimon models.Digimon) error {
 	sacrificed := shouldSacrifice(c.config.PS)
 
-	// Crear el mensaje en texto plano
 	plaintext := digimon.Name + "," + digimon.Type + "," + strconv.FormatBool(sacrificed)
 
 	encryptedMessage, err := crypto.EncryptAES(plaintext)

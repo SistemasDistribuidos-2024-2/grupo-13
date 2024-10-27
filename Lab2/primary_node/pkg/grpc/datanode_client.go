@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"google.golang.org/grpc"
@@ -68,4 +69,24 @@ func (c *DataNodeClient) GetAttributeFromDataNode(id int) (string, error) {
 		return "", err
 	}
 	return resp.Attribute, nil
+}
+
+// TerminateDataNodes envía la señal de terminación a ambos Data Nodes
+func (c *DataNodeClient) TerminateDataNodes() error {
+	_, err1 := c.dataNode1.Terminate(context.Background(), &pb.TerminateRequest{Message: "Fin de ejecución"})
+	if err1 != nil {
+		log.Printf("[ERROR] Error al terminar Data Node 1: %v", err1)
+	}
+
+	_, err2 := c.dataNode2.Terminate(context.Background(), &pb.TerminateRequest{Message: "Fin de ejecución"})
+	if err2 != nil {
+		log.Printf("[ERROR] Error al terminar Data Node 2: %v", err2)
+	}
+
+	if err1 != nil || err2 != nil {
+		return fmt.Errorf("error al terminar uno o más Data Nodes")
+	}
+
+	log.Println("[PRIMARY NODE] Señal de terminación enviada a ambos Data Nodes.")
+	return nil
 }

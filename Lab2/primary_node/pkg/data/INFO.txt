@@ -23,3 +23,43 @@
 81777,1,Kunemon,true
 80165,2,Shoutmon,false
 12545,2,Salamon (X Antibody),true
+37419,2,Palmon (X Antibody),true
+74606,1,Gabumon,true
+20259,1,KoDokugumon,true
+15179,2,Otamamon (X Antibody),false
+74832,1,Crabmon (X Antibody),false
+16144,1,Candlemon,true
+24930,1,Dracomon,false
+99074,1,Kunemon,true
+72869,2,Salamon (X Antibody),false
+1959,1,ClearAgumon,false
+63133,2,Tinkermon,true
+91110,2,Sangomon,false
+67924,2,Otamamon,false
+43534,2,Zubamon,true
+14574,1,Monmon,false
+77875,2,Pteromon,true
+98528,1,Lucemon,true
+43401,1,Impmon (X Antibody),true
+19443,2,Salamon,false
+33742,1,Labramon,false
+68288,2,Psychemon,false
+8261,1,Loogamon (X Antibody),true
+13602,2,Otamamon (X Antibody),true
+74750,2,Tentomon,false
+66633,2,Starmons,true
+3198,1,Biyomon,true
+55013,2,Sunarizamon,true
+28745,1,Crabmon,false
+74441,2,Tsukaimon,true
+44736,2,Penmon,true
+14861,1,Kunemon,true
+1338,2,Terriermon (X Antibody),true
+66803,1,Lunamon,true
+36281,2,Shoemon,false
+56652,2,Palmon,true
+83458,1,Crabmon,false
+54713,1,Elecmon,true
+27538,1,Falcomon,false
+530,1,Gomamon (X Antibody),true
+70062,1,Bulucomon,true

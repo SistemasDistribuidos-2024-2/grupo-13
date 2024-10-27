@@ -1,6 +1,6 @@
 module primary_node
 
-go 1.22.2
+go 1.23.2
 
 require (
 	google.golang.org/grpc v1.67.1

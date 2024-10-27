@@ -1,15 +1,90 @@
 syntax = "proto3";
-
 package digimon;
 
-option go_package = "regional_server/pkg/grpc/protobuf;protobuf";
+option go_package = "primary_node/pkg/grpc/protobuf;protobuf";
 
-service PrimaryNode {
+// Servicio del Primary Node
+service PrimaryNodeService {
   rpc ReceiveEncryptedMessage (EncryptedMessage) returns (Empty);
+  rpc GetAttackData (TaiRequest) returns (AttackDataResponse);
+  rpc SendTerminationSignal (TerminateProcess) returns (TerminateResponse);
 }
+
+// Servicio del Data Node
+service DataNodeService {
+  rpc StoreDigimon (DigimonInfo) returns (StoreDigimonResponse);
+  rpc GetDigimonAttribute (DigimonRequest) returns (DigimonResponse);
+  rpc Terminate (TerminateRequest) returns (TerminateResponse);
+}
+
+// Servicio del Servidor Regional
+service RegionalServerService {
+  rpc TerminateRegional (TerminateRequest) returns (TerminateResponse);
+}
+
+// Servicio de Diaboromon
+service DiaboromonService {
+  rpc StartDiaboromon (Empty) returns (StartResponse);
+  rpc AttackDiaboromon (AttackRequest) returns (AttackResponse);
+}
+
+// Servicio de Tai
+service TaiService {
+  rpc DiaboromonAttack (Empty) returns (AttackResponse);
+}
+
+// Mensajes comunes
+message Empty {}
 
 message EncryptedMessage {
   string encrypted_data = 1;
 }
 
-message Empty {}
+message TerminateProcess {
+  string result = 1;
+}
+
+message TerminateResponse {
+  string message = 1;
+}
+
+message TaiRequest {
+  string message = 1;
+}
+
+message AttackDataResponse {
+  int32 data_collected = 1;
+}
+
+message DigimonInfo {
+  int32 id = 1;
+  string attribute = 2;
+}
+
+message StoreDigimonResponse {
+  string message = 1;
+}
+
+message DigimonRequest {
+  int32 id = 1;
+}
+
+message DigimonResponse {
+  string attribute = 1;
+}
+
+message TerminateRequest {
+  string message = 1;
+}
+
+message StartResponse {
+  string message = 1;
+}
+
+message AttackRequest {
+  int32 attack_value = 1;
+}
+
+message AttackResponse {
+  bool success = 1;
+}
