@@ -26,6 +26,6 @@ docker-cf:
 	sudo docker-compose down
 	sudo docker-compose up --build continente-folder
 
-docker-if:
+docker-cs:
 	sudo docker-compose down
 	sudo docker-compose up --build continente-server
