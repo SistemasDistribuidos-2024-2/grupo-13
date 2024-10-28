@@ -26,7 +26,7 @@ WORKDIR /app
 COPY --from=builder /app/primary_node .
 
 # Exponer el puerto utilizado por el Primary Node
-EXPOSE 50051
+EXPOSE 50057
 
 # Comando de inicio del contenedor
 CMD ["./primary_node"]

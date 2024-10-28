@@ -26,7 +26,7 @@ WORKDIR /app
 COPY --from=builder /app/regional_server .
 
 # Exponer el puerto utilizado por el Regional Server
-EXPOSE 50056
+EXPOSE 50053
 
 # Comando de inicio del contenedor
 CMD ["./regional_server"]
