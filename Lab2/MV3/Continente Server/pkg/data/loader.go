@@ -52,7 +52,7 @@ func LoadInputConfig() (*InputConfig, error) {
 
 // Carga de los Digimon desde el archivo DIGIMONS.TXT
 func LoadDigimons() ([]models.Digimon, error) {
-	file, err := os.Open("pkg/data/DIGIMONS.TXT")
+	file, err := os.Open("pkg/data/DIGIMONS.txt")
 	if err != nil {
 		log.Fatalf("Error al abrir DIGIMONS.TXT: %v", err)
 		return nil, err
