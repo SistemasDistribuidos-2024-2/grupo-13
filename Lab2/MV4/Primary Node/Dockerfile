@@ -1,32 +1,20 @@
-# Usar la última imagen oficial de Golang
-FROM golang:latest AS builder
-
-# Establecer el directorio de trabajo dentro del contenedor
-WORKDIR /app
-
-# Copiar los archivos go.mod y go.sum para descargar dependencias
-COPY go.mod go.sum ./
-
-# Descargar las dependencias del proyecto
-RUN go mod download
-
-# Copiar el resto de los archivos del proyecto
-COPY . .
-
-# Compilar el proyecto
-RUN go build -o primary_node cmd/server/main.go
-
-# Usar una imagen más ligera para ejecutar el binario
-FROM alpine:latest
+# Usar la imagen oficial de Go 1.23.2 con Alpine
+FROM golang:1.23.2-alpine
 
 # Establecer el directorio de trabajo
 WORKDIR /app
 
-# Copiar el binario desde la etapa de construcción
-COPY --from=builder /app/primary_node .
+# Copiar los archivos del proyecto al contenedor
+COPY . .
 
-# Exponer el puerto utilizado por el Primary Node
-EXPOSE 50057
+# Ejecutar go mod tidy para gestionar dependencias
+RUN go mod tidy
 
-# Comando de inicio del contenedor
+# Compilar el proyecto
+RUN go build -o primary_node cmd/server/main.go
+
+# Exponer el puerto del Primary Node
+EXPOSE 50051
+
+# Comando para ejecutar el binario
 CMD ["./primary_node"]
