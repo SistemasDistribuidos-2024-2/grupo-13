@@ -1,6 +1,6 @@
 syntax = "proto3";
 option go_package = "grpc-server/proto";
-package datanode;
+package digimon;
 
 service DataNodeService {
   rpc StoreDigimon(DigimonInfo) returns (StoreDigimonResponse);
