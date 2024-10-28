@@ -11,7 +11,7 @@ COPY . .
 RUN go mod tidy
 
 # Compilar el proyecto
-RUN go build -o primary_node cmd/client/main.go
+RUN go build -o regional_server cmd/client/main.go
 
 # Exponer el puerto utilizado por el Regional Server
 EXPOSE 50056

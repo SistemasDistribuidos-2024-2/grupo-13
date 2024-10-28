@@ -12,8 +12,9 @@ import (
 	"sync"
 	"time"
 
-	"google.golang.org/grpc"
 	pb "grpc-server/proto/grpc-server/proto"
+
+	"google.golang.org/grpc"
 )
 
 type servidor struct {
@@ -83,7 +84,7 @@ func (s *servidor) AttackDiaboromon(ctx context.Context, req *pb.AttackRequest) 
 }
 
 func leerCDyTD() (int32, int32, error) {
-	archivo, err := os.Open("input.txt")
+	archivo, err := os.Open("INPUT.txt")
 	if err != nil {
 		return 0, 0, err
 	}

@@ -11,8 +11,9 @@ import (
 	"strings"
 	"sync"
 
-	"google.golang.org/grpc"
 	pb "grpc-server/proto/grpc-server/proto"
+
+	"google.golang.org/grpc"
 )
 
 type servidorTai struct {
@@ -76,7 +77,7 @@ func (s *servidorTai) enviarSenalTermino(resultado string) {
 }
 
 func leerVI() (int32, error) {
-	archivo, err := os.Open("input.txt")
+	archivo, err := os.Open("INPUT.txt")
 	if err != nil {
 		return 0, err
 	}
