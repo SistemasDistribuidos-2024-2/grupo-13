@@ -7,13 +7,13 @@ import (
 )
 
 const (
-	primaryNodeAddress  = "localhost:50051"
-	dataNode1Address    = "localhost:50052"
-	dataNode2Address    = "localhost:50053"
-	taiNodeAddress      = "localhost:50054"
-	regionalServer1Addr = "localhost:50056"
-	regionalServer2Addr = "localhost:50057"
-	regionalServer3Addr = "localhost:50058"
+	primaryNodeAddress  = "dist052:50057"
+	dataNode1Address    = "dist049:50051"
+	dataNode2Address    = "dist051:50052"
+	taiNodeAddress      = "dist052:50058"
+	regionalServer1Addr = "dist049:50053"
+	regionalServer2Addr = "dist050:50054"
+	regionalServer3Addr = "dist051:50056"
 )
 
 func main() {

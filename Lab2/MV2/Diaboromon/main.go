@@ -143,7 +143,7 @@ func main() {
 	s.ctx, s.cancelar = context.WithCancel(context.Background())
 
 	go func() {
-		lis, err := net.Listen("tcp", ":50051")
+		lis, err := net.Listen("tcp", ":50055")
 		if err != nil {
 			log.Fatalf("No se pudo escuchar: %v", err)
 		}
@@ -157,7 +157,7 @@ func main() {
 	<-s.inicio
 
 	go func() {
-		conn, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+		conn, err := grpc.Dial("dist052:50058", grpc.WithInsecure())
 		if err != nil {
 			log.Fatalf("No se pudo conectar con Tai: %v", err)
 		}

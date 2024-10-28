@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	primaryNodeAddress    = "localhost:50051"
-	regionalServerAddress = "localhost:50056"
+	primaryNodeAddress    = "dist052:50057"
+	regionalServerAddress = "dist050:50054"
 )
 
 func main() {

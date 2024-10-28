@@ -116,9 +116,9 @@ func main() {
 	s.ctx, s.cancelar = context.WithCancel(context.Background())
 
 	go func() {
-		lis, err := net.Listen("tcp", ":50052")
+		lis, err := net.Listen("tcp", ":50058")
 		if err != nil {
-			log.Fatalf("No se pudo escuchar en el puerto 50052: %v", err)
+			log.Fatalf("No se pudo escuchar en el puerto 50058: %v", err)
 		}
 		servidorGRPC := grpc.NewServer()
 		pb.RegisterTaiServiceServer(servidorGRPC, s)
@@ -127,14 +127,14 @@ func main() {
 		}
 	}()
 
-	connDiaboromon, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	connDiaboromon, err := grpc.Dial("dist050:50055", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("No se pudo conectar con Diaboromon: %v", err)
 	}
 	defer connDiaboromon.Close()
 	s.diaboromonClient = pb.NewDiaboromonServiceClient(connDiaboromon)
 
-	connPrimaryNode, err := grpc.Dial("localhost:50053", grpc.WithInsecure())
+	connPrimaryNode, err := grpc.Dial("dist052:50057", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("No se pudo conectar con el Nodo Primario: %v", err)
 	}
