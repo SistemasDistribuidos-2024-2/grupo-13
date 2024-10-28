@@ -127,14 +127,14 @@ func main() {
 		}
 	}()
 
-	connDiaboromon, err := grpc.Dial("dist050:50055", grpc.WithInsecure())
+	connDiaboromon, err := grpc.Dial("diaboromon_container:50055", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("No se pudo conectar con Diaboromon: %v", err)
 	}
 	defer connDiaboromon.Close()
 	s.diaboromonClient = pb.NewDiaboromonServiceClient(connDiaboromon)
 
-	connPrimaryNode, err := grpc.Dial("dist052:50057", grpc.WithInsecure())
+	connPrimaryNode, err := grpc.Dial("primary_node_container:50057", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("No se pudo conectar con el Nodo Primario: %v", err)
 	}

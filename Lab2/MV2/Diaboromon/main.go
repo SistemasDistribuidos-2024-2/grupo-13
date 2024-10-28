@@ -157,7 +157,7 @@ func main() {
 	<-s.inicio
 
 	go func() {
-		conn, err := grpc.Dial("dist052:50058", grpc.WithInsecure())
+		conn, err := grpc.Dial("tai_container:50058", grpc.WithInsecure())
 		if err != nil {
 			log.Fatalf("No se pudo conectar con Tai: %v", err)
 		}

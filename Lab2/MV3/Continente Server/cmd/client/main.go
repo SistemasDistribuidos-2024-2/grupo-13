@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	primaryNodeAddress    = "dist052:50057"
-	regionalServerAddress = "dist051:50056"
+	primaryNodeAddress    = "continente_server_container:50057"
+	regionalServerAddress = "primary_node_container:50056"
 )
 
 func main() {

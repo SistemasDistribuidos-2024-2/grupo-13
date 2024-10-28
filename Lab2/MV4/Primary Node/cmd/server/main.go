@@ -7,13 +7,13 @@ import (
 )
 
 const (
-	primaryNodeAddress  = "dist052:50057"
-	dataNode1Address    = "dist049:50051"
-	dataNode2Address    = "dist051:50052"
-	taiNodeAddress      = "dist052:50058"
-	regionalServer1Addr = "dist049:50053"
-	regionalServer2Addr = "dist050:50054"
-	regionalServer3Addr = "dist051:50056"
+	primaryNodeAddress  = "primary_node_container:50057"
+	dataNode1Address    = "data_node_1_container:50051"
+	dataNode2Address    = "data_node_2_container:50052"
+	taiNodeAddress      = "tai_container:50058"
+	regionalServer1Addr = "isla_file_container:50053"
+	regionalServer2Addr = "continente_folder_container:50054"
+	regionalServer3Addr = "continente_server_container:50056"
 )
 
 func main() {
