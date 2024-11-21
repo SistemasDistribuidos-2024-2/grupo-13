@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v3.12.4
-// source: pkg/grpc/protobuf/digimon.proto
+// source: digimon.proto
 
-package protobuf
+package proto
 
 import (
 	context "context"
@@ -197,7 +197,7 @@ var PrimaryNodeService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pkg/grpc/protobuf/digimon.proto",
+	Metadata: "digimon.proto",
 }
 
 const (
@@ -379,7 +379,7 @@ var DataNodeService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pkg/grpc/protobuf/digimon.proto",
+	Metadata: "digimon.proto",
 }
 
 const (
@@ -485,7 +485,7 @@ var RegionalServerService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pkg/grpc/protobuf/digimon.proto",
+	Metadata: "digimon.proto",
 }
 
 const (
@@ -629,7 +629,7 @@ var DiaboromonService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pkg/grpc/protobuf/digimon.proto",
+	Metadata: "digimon.proto",
 }
 
 const (
@@ -735,5 +735,5 @@ var TaiService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pkg/grpc/protobuf/digimon.proto",
+	Metadata: "digimon.proto",
 }

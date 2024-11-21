@@ -1,5 +1,5 @@
 # Dockerfile
-FROM golang:1.23.2
+FROM golang:1.23.3
 
 WORKDIR /Lab2/MV1/Data Node 1
 

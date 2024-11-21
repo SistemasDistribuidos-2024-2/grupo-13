@@ -1,7 +1,7 @@
 syntax = "proto3";
 package digimon;
 
-option go_package = "primary_node/pkg/grpc/protobuf;protobuf";
+option go_package = "grpc-server/proto";
 
 // Servicio del Primary Node
 service PrimaryNodeService {

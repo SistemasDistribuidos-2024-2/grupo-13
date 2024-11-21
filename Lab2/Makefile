@@ -16,7 +16,8 @@ docker-diaboromon:
 
 docker-tai:
 	sudo docker-compose stop tai && sudo docker-compose rm -f tai
-	sudo docker-compose up --build tai
+	sudo docker-compose up --build -d tai
+	sudo docker attach tai_container
 
 docker-if:
 	sudo docker-compose stop isla-file && sudo docker-compose rm -f isla-file
