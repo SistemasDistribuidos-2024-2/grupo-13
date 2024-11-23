@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package hextech;
+
+option go_package = "proto/";
+
+service HextechService {
+  // Comandos enviados por supervisores
+  rpc AddProductServer(AddProductRequest) returns (ClockResponse);
+
+  rpc DeleteProductServer(DeleteProductRequest) returns (ClockResponse);
+
+  rpc UpdateProductServer(UpdateProductRequest) returns (ClockResponse);
+
+  rpc RenameProductServer(RenameProductRequest) returns (ClockResponse);
+
+  // Comandos enviados por jayce
+
+  rpc GetProductServer(GetProductRequest) returns (ProductResponse);
+
+  // Comandos enviados por broker, supervisores y jayce
+  rpc ForceMerge(ErrorMergeRequest) returns (ConfirmationError);
+
+  // Comandos enviados por servidores
+  rpc PropagateChanges(PropagationRequest) returns (PropagationResponse);
+  rpc RequestMerge(MergeRequest) returns (MergeResponse);
+}
+
+message AddProductRequest {
+  string region = 1;
+  string product = 2;
+  int32 quantity = 3;
+}
+
+message DeleteProductRequest {
+  string region = 1;
+  string product = 2;
+}
+
+message UpdateProductRequest {
+  string region = 1;
+  string product = 2;
+  int32 quantity = 3;
+}
+
+message RenameProductRequest {
+  string region = 1;
+  string old_product = 2;
+  string new_product = 3;
+}
+
+message GetProductRequest {
+  string region = 1;
+  string product = 2;
+}
+
+message AddressResponse {
+  string address =1;
+}
+
+message ClockResponse {
+  repeated int32 vector_clock = 1;
+}
+
+message ProductResponse {
+  int32 quantity = 1;
+  repeated int32 vector_clock = 3;
+}
+
+//-------------------------------------- Solo Error -------------------//
+
+message ErrorMergeRequest {
+  string region = 1;
+  repeated int32 vector_clock = 2;
+}
+
+message ConfirmationError {
+  string confirmation = 1;
+}
+
+//-------------------------------------- Solo Servidores -------------------//
+message PropagationRequest {
+  string region = 1;
+  repeated string changeLog = 2;
+  repeated int32 vectorClock = 3;
+}
+
+message PropagationResponse {
+  string status = 1; // "success" o "error"
+}
+
+message MergeRequest {
+  string region = 1;
+}
+
+message MergeResponse {
+  repeated string changeLog = 1;
+  repeated int32 vectorClock = 2;
+}
