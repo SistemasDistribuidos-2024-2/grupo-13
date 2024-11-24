@@ -15,29 +15,25 @@ import (
 )
 
 const (
-	brokerAddress = "broker_container:50050" // Dirección del broker
+	brokerAddress = "broker_container:50050"
 )
 
-var vectorClocks = make(map[string][]int32) // Almacén de relojes vectoriales por región
-var mutex sync.Mutex                        // Para proteger el acceso al almacén de relojes
+var vectorClocks = make(map[string][]int32)
+var mutex sync.Mutex
 
 func main() {
-	// Verificar que se pasó el argumento
 	if len(os.Args) < 2 {
 		log.Fatal("Por favor, especifica el argumento: 1 para Supervisor 1 o 2 para Supervisor 2")
 	}
 
-	// Convertir el argumento a un entero
 	supervisorID, err := strconv.Atoi(os.Args[1])
 	if err != nil || (supervisorID != 1 && supervisorID != 2) {
 		log.Fatal("El argumento debe ser 1 o 2")
 	}
 
-	// Ejecutar el supervisor correspondiente
 	runSupervisor(supervisorID)
 }
 
-// runSupervisor configura y ejecuta el supervisor según el ID especificado
 func runSupervisor(supervisorID int) {
 	time.Sleep(1 * time.Second)
 
@@ -76,7 +72,6 @@ func runSupervisor(supervisorID int) {
 	}
 }
 
-// handleRequest procesa las solicitudes del menú
 func handleRequest(action string, reader *bufio.Reader) {
 	var region, product, newProduct string
 	var value int
@@ -102,9 +97,7 @@ func handleRequest(action string, reader *bufio.Reader) {
 	requestBroker(action, region, product, newProduct, value)
 }
 
-// requestBroker se conecta al broker y maneja la respuesta
 func requestBroker(action, region, product, newProduct string, value int) {
-	// Conexión al broker
 	conn, err := grpc.Dial(brokerAddress, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Error al conectar con el broker: %v", err)
@@ -114,7 +107,6 @@ func requestBroker(action, region, product, newProduct string, value int) {
 	client := pb.NewHextechServiceClient(conn)
 	var address string
 
-	// Solicitar dirección al broker
 	switch action {
 	case "AgregarProducto":
 		resp, err := client.AddProductBroker(context.Background(), &pb.AddProductRequest{
@@ -161,7 +153,6 @@ func requestBroker(action, region, product, newProduct string, value int) {
 	sendToServer(action, address, region, product, newProduct, value)
 }
 
-// sendToServer se conecta al servidor para reenviar la solicitud
 func sendToServer(action, address, region, product, newProduct string, value int) {
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
@@ -206,12 +197,10 @@ func sendToServer(action, address, region, product, newProduct string, value int
 	handleClockConsistency(region, clockResponse.VectorClock)
 }
 
-// handleClockConsistency maneja la consistencia del reloj vectorial
 func handleClockConsistency(region string, receivedClock []int32) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	// Verificar si ya existe un reloj vectorial para la región
 	if storedClock, exists := vectorClocks[region]; exists {
 		for i, v := range receivedClock {
 			if v < storedClock[i] {
@@ -222,12 +211,10 @@ func handleClockConsistency(region string, receivedClock []int32) {
 		}
 	}
 
-	// Actualizar el reloj vectorial
 	vectorClocks[region] = receivedClock
 	fmt.Printf("[%s] actualizada: %v\n", region, receivedClock)
 }
 
-// forceMergeWithBroker envía una solicitud al broker para forzar un merge
 func forceMergeWithBroker(region string, vectorClock []int32) {
 	conn, err := grpc.Dial(brokerAddress, grpc.WithInsecure())
 	if err != nil {

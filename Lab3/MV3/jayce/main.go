@@ -15,7 +15,7 @@ import (
 	pb "grpc-server/proto/grpc-server/proto"
 )
 
-const brokerAddress = "broker_container:50050" // Dirección del broker
+const brokerAddress = "broker_container:50050"
 
 var mutex sync.Mutex
 var serverRegions = map[string]string{
@@ -48,7 +48,6 @@ func main() {
 	}
 }
 
-// handleGetProduct procesa la solicitud de consulta de un producto
 func handleGetProduct(reader *bufio.Reader) {
 	fmt.Print("Ingresa el nombre de la región: ")
 	region, _ := reader.ReadString('\n')
@@ -68,7 +67,6 @@ func handleGetProduct(reader *bufio.Reader) {
 	queryServer(address, region, product)
 }
 
-// requestBroker consulta al broker para obtener la dirección de un servidor
 func requestBroker(region, product string) string {
 	conn, err := grpc.Dial(brokerAddress, grpc.WithInsecure())
 	if err != nil {
@@ -89,7 +87,6 @@ func requestBroker(region, product string) string {
 	return resp.Address
 }
 
-// queryServer consulta al servidor y maneja la respuesta
 func queryServer(address, region, product string) {
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
@@ -110,7 +107,6 @@ func queryServer(address, region, product string) {
 	handleConsistency(address, region, product, resp.VectorClock, resp.Quantity)
 }
 
-// handleConsistency verifica la consistencia Monotonic Read y actualiza los registros
 func handleConsistency(address, region, product string, vectorClock []int32, quantity int32) {
 	serverID := serverRegions[address]
 	filename := fmt.Sprintf("%s_%s.txt", serverID, region)
@@ -118,22 +114,18 @@ func handleConsistency(address, region, product string, vectorClock []int32, qua
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	// Leer el archivo si existe
 	existingClock := readClockFromFile(filename)
 
-	// Verificar consistencia Monotonic Read
 	if !isMonotonicRead(existingClock, vectorClock) {
 		fmt.Printf("Inconsistencia detectada, notificando al broker: Forzar Merge %s %v\n", region, vectorClock)
 		notifyBroker(region, vectorClock)
 		return
 	}
 
-	// Actualizar el archivo
 	updateFile(filename, vectorClock, product, quantity)
 	fmt.Printf("[%s] [%s] actualizado correctamente.\n", serverID, region)
 }
 
-// isMonotonicRead verifica si un reloj satisface la consistencia Monotonic Read
 func isMonotonicRead(existingClock, newClock []int32) bool {
 	if len(existingClock) == 0 {
 		return true // Si no hay un reloj previo, no hay inconsistencia
@@ -147,7 +139,6 @@ func isMonotonicRead(existingClock, newClock []int32) bool {
 	return true
 }
 
-// readClockFromFile lee el reloj vectorial del archivo, si existe
 func readClockFromFile(filename string) []int32 {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -163,7 +154,6 @@ func readClockFromFile(filename string) []int32 {
 	return nil
 }
 
-// updateFile actualiza el archivo con el nuevo reloj vectorial y producto
 func updateFile(filename string, vectorClock []int32, product string, quantity int32) {
 	file, err := os.Create(filename)
 	if err != nil {
@@ -177,7 +167,6 @@ func updateFile(filename string, vectorClock []int32, product string, quantity i
 	writer.Flush()
 }
 
-// parseClock convierte una cadena de texto en un reloj vectorial
 func parseClock(line string) []int32 {
 	parts := strings.Split(line, ",")
 	clock := make([]int32, len(parts))
@@ -188,7 +177,6 @@ func parseClock(line string) []int32 {
 	return clock
 }
 
-// formatClock convierte un reloj vectorial en una cadena de texto
 func formatClock(clock []int32) string {
 	parts := make([]string, len(clock))
 	for i, v := range clock {
@@ -197,7 +185,6 @@ func formatClock(clock []int32) string {
 	return strings.Join(parts, ",")
 }
 
-// notifyBroker notifica al broker sobre una inconsistencia
 func notifyBroker(region string, vectorClock []int32) {
 	conn, err := grpc.Dial(brokerAddress, grpc.WithInsecure())
 	if err != nil {
