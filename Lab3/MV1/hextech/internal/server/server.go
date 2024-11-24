@@ -71,7 +71,7 @@ func (s *HextechServer) PropagateChanges(ctx context.Context, req *proto.Propaga
 	defer s.mu.Unlock()
 
 	region := req.Region
-	fmt.Printf("[Servidor Hextech] Propagando cambios en la región [%s]\n", region)
+	fmt.Printf("[Servidor Hextech] Recibiendo cambios para la región [%s]\n", region)
 
 	// Verificar si la región existe; si no, crearla
 	if _, exists := s.storage[region]; !exists {
@@ -84,12 +84,14 @@ func (s *HextechServer) PropagateChanges(ctx context.Context, req *proto.Propaga
 	}
 
 	regionData := s.storage[region]
+
 	// Procesar cada log recibido
 	for _, log := range req.ChangeLog {
 		logHash := generateLogHash(log)
 
 		// Si el log ya fue procesado, omitirlo
 		if s.appliedLogs[logHash] {
+			fmt.Printf("[Servidor Hextech] Log duplicado ignorado: %s\n", log)
 			continue
 		}
 
@@ -111,19 +113,7 @@ func (s *HextechServer) PropagateChanges(ctx context.Context, req *proto.Propaga
 		}
 	}
 
-	// Propagar los cambios a otros peers
-	for _, peer := range s.peers {
-		if peer != nil { // Asegurarse de que el peer esté conectado
-			go func(peer proto.HextechServiceClient) {
-				_, err := peer.PropagateChanges(context.Background(), req)
-				if err != nil {
-					fmt.Printf("[Servidor Hextech] Error al propagar cambios a un peer: %v\n", err)
-				}
-			}(peer)
-		}
-	}
-
-	fmt.Printf("[Servidor Hextech] Cambios propagados a la región [%s].\n", region)
+	fmt.Printf("[Servidor Hextech] Cambios aplicados a la región [%s].\n", region)
 	return &proto.PropagationResponse{Status: "success"}, nil
 }
 

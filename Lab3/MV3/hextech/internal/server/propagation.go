@@ -7,7 +7,6 @@ import (
 	"strings"
 	"hextech/internal/storage"
 	"hextech/proto"
-	"os"
 )
 
 func (s *HextechServer) StartPropagation() {
@@ -17,6 +16,7 @@ func (s *HextechServer) StartPropagation() {
 	for {
 		<-ticker.C
 		s.mu.Lock()
+		fmt.Println("[Servidor Hextech] Iniciando propagación de cambios...")
 
 		for _, peer := range s.peers {
 			for region, regionData := range s.storage {
@@ -26,27 +26,27 @@ func (s *HextechServer) StartPropagation() {
 						ChangeLog:   regionData.ChangeLog,
 						VectorClock: regionData.VectorClock,
 					}
+
 					go func(peer proto.HextechServiceClient, req *proto.PropagationRequest) {
 						_, err := peer.PropagateChanges(context.Background(), req)
 						if err != nil {
-							fmt.Printf("[Servidor Hextech] Error al propagar a un peer: %v\n", err)
-						} else {
-							// Limpiar los logs después de la propagación exitosa
-							regionData.ClearLogs()
-							logFilePath := s.getLogFilePath()
-							err := os.WriteFile(logFilePath, []byte{}, 0644)
-							if err != nil {
-								fmt.Printf("[Servidor Hextech] Error al limpiar archivo de logs: %v\n", err)
-							}
+							fmt.Printf("[Servidor Hextech] Error al propagar cambios a un peer: %v\n", err)
 						}
 					}(peer, req)
 				}
 			}
 		}
 
+		// Limpia los logs después de la propagación
+		for _, regionData := range s.storage {
+			regionData.ClearLogs()
+		}
+
 		s.mu.Unlock()
+		fmt.Println("[Servidor Hextech] Propagación de cambios completada.")
 	}
 }
+
 
 func createRegionOnPeer(peer proto.HextechServiceClient, region string, regionData *storage.RegionData) error {
 	fmt.Printf("[Servidor Hextech] Creando región [%s] en peer...\n", region)
