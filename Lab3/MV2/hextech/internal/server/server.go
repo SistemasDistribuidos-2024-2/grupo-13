@@ -11,17 +11,15 @@ import (
 	"hextech/proto"
 )
 
-
 type HextechServer struct {
 	mu          sync.Mutex
 	storage     map[string]*storage.RegionData
 	serverID    int
 	peers       []proto.HextechServiceClient
-	appliedLogs map[string]bool // Logs ya aplicados
+	appliedLogs map[string]bool
 
 	proto.UnimplementedHextechServiceServer
 }
-
 
 func generateLogHash(log string) string {
 	hash := sha256.Sum256([]byte(log))
@@ -73,7 +71,6 @@ func (s *HextechServer) PropagateChanges(ctx context.Context, req *proto.Propaga
 	region := req.Region
 	fmt.Printf("[Servidor Hextech] Recibiendo cambios para la región [%s]\n", region)
 
-	// Verificar si la región existe; si no, crearla
 	if _, exists := s.storage[region]; !exists {
 		s.storage[region] = storage.NewRegionData(fmt.Sprintf("%s.txt", region), len(s.peers)+1)
 		err := os.WriteFile(s.storage[region].FilePath, []byte{}, 0644)
@@ -85,28 +82,23 @@ func (s *HextechServer) PropagateChanges(ctx context.Context, req *proto.Propaga
 
 	regionData := s.storage[region]
 
-	// Procesar cada log recibido
 	for _, log := range req.ChangeLog {
 		logHash := generateLogHash(log)
 
-		// Si el log ya fue procesado, omitirlo
 		if s.appliedLogs[logHash] {
 			fmt.Printf("[Servidor Hextech] Log duplicado ignorado: %s\n", log)
 			continue
 		}
 
-		// Aplicar el log al archivo de la región
 		err := storage.ApplyLogToFile(regionData.FilePath, log, s.serverID)
 		if err != nil {
 			fmt.Printf("[Servidor Hextech] Error al aplicar log [%s]: %v\n", log, err)
 			return nil, err
 		}
 
-		// Marcar el log como aplicado
 		s.appliedLogs[logHash] = true
 	}
 
-	// Actualizar el reloj vectorial
 	for i, value := range req.VectorClock {
 		if value > regionData.VectorClock[i] {
 			regionData.VectorClock[i] = value
@@ -116,9 +108,6 @@ func (s *HextechServer) PropagateChanges(ctx context.Context, req *proto.Propaga
 	fmt.Printf("[Servidor Hextech] Cambios aplicados a la región [%s].\n", region)
 	return &proto.PropagationResponse{Status: "success"}, nil
 }
-
-
-
 
 func (s *HextechServer) ForceMerge(ctx context.Context, req *proto.ErrorMergeRequest) (*proto.ConfirmationError, error) {
 	fmt.Printf("[Servidor Hextech][Merge forzado solicitado]: Región=%s\n", req.Region)
@@ -134,13 +123,10 @@ func (s *HextechServer) AddProduct(ctx context.Context, req *proto.AddProductReq
 	product := req.Product
 	quantity := req.Quantity
 
-	// Verificar si la región existe en memoria
 	if _, exists := s.storage[region]; !exists {
-		// Crear la región en memoria y su archivo asociado
 		regionData := storage.NewRegionData(fmt.Sprintf("%s.txt", region), len(s.peers)+1)
 		s.storage[region] = regionData
 
-		// Crear el archivo si no existe
 		err := os.WriteFile(regionData.FilePath, []byte{}, 0644)
 		if err != nil {
 			fmt.Printf("[Servidor Hextech] Error al crear archivo para región: %v\n", err)
@@ -151,7 +137,6 @@ func (s *HextechServer) AddProduct(ctx context.Context, req *proto.AddProductReq
 
 	regionData := s.storage[region]
 
-	// Verificar si el producto ya existe en el archivo
 	existingQuantity, err := storage.GetProductQuantity(regionData.FilePath, product)
 	if err != nil && err != storage.ErrProductNotFound {
 		fmt.Printf("[Servidor Hextech] Error al verificar producto en archivo: %v\n", err)
@@ -159,18 +144,16 @@ func (s *HextechServer) AddProduct(ctx context.Context, req *proto.AddProductReq
 	}
 
 	newQuantity := quantity
-	if err == nil { // Si el producto existe, sumar las cantidades
+	if err == nil { 
 		newQuantity += existingQuantity
 	}
 
-	// Actualizar o añadir el producto en el archivo
 	err = storage.UpdateValueInFile(regionData.FilePath, region, product, newQuantity)
 	if err != nil {
 		fmt.Printf("[Servidor Hextech] Error al actualizar producto en archivo: %v\n", err)
 		return nil, err
 	}
 
-	// Registrar en el log de memoria y en el archivo global de logs
 	logEntry := fmt.Sprintf("AgregarProducto %s %s %d", region, product, quantity)
 	regionData.AddLog(logEntry, s.serverID)
 	s.writeToLogFile(logEntry)
@@ -179,9 +162,6 @@ func (s *HextechServer) AddProduct(ctx context.Context, req *proto.AddProductReq
 	return &proto.ClockResponse{VectorClock: regionData.VectorClock}, nil
 }
 
-
-
-
 func (s *HextechServer) DeleteProduct(ctx context.Context, req *proto.DeleteProductRequest) (*proto.ClockResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -189,32 +169,28 @@ func (s *HextechServer) DeleteProduct(ctx context.Context, req *proto.DeleteProd
 	region := req.Region
 	product := req.Product
 
-	// Verifica si la región existe en el almacenamiento
 	if regionData, exists := s.storage[region]; exists {
-		// Intenta eliminar el producto del archivo
 		err := storage.RemoveProductFromFile(regionData.FilePath, product)
 		if err != nil {
 			if err == storage.ErrProductNotFound {
 				fmt.Printf("[Servidor Hextech] Producto no encontrado: Región=%s, Producto=%s\n", region, product)
-				return nil, fmt.Errorf("Producto %s no encontrado en región %s", product, region)
+				return &proto.ClockResponse{VectorClock: regionData.VectorClock}, fmt.Errorf("Producto %s no encontrado en región %s", product, region)
 			}
-			fmt.Printf("[Servidor Hextech] Error al eliminar producto del archivo: %v\n", err)
-			return nil, err
+			fmt.Printf("[Servidor Hextech] Error al intentar eliminar producto del archivo: %v\n", err)
+			return &proto.ClockResponse{VectorClock: regionData.VectorClock}, err
 		}
 
-		// Registra en el archivo de logs
 		logEntry := fmt.Sprintf("BorrarProducto %s %s", region, product)
 		s.writeToLogFile(logEntry)
 		regionData.AddLog(logEntry, s.serverID)
 
-		fmt.Printf("[Servidor Hextech] Producto eliminado: Región=%s, Producto=%s\n", region, product)
+		fmt.Printf("[Servidor Hextech] Producto eliminado exitosamente: Región=%s, Producto=%s\n", region, product)
 		return &proto.ClockResponse{VectorClock: regionData.VectorClock}, nil
 	}
 
-	fmt.Printf("[Servidor Hextech] Error: Región no encontrada: %s\n", region)
-	return nil, fmt.Errorf("Región %s no encontrada", region)
+	fmt.Printf("[Servidor Hextech] Región no encontrada: %s\n", region)
+	return &proto.ClockResponse{VectorClock: make([]int32, len(s.peers)+1)}, fmt.Errorf("Región %s no encontrada", region)
 }
-
 
 
 func (s *HextechServer) RenameProduct(ctx context.Context, req *proto.RenameProductRequest) (*proto.ClockResponse, error) {
@@ -226,24 +202,35 @@ func (s *HextechServer) RenameProduct(ctx context.Context, req *proto.RenameProd
 	newProduct := req.NewProduct
 
 	if regionData, exists := s.storage[region]; exists {
-		regionData.AddLog(fmt.Sprintf("RenombrarProducto %s %s %s", region, oldProduct, newProduct), s.serverID)
-
-		if err := storage.UpdateFile(regionData.FilePath, oldProduct, newProduct); err != nil {
-			fmt.Printf("[Servidor Hextech] Error al renombrar producto en archivo: %v\n", err)
-			return nil, err
+		exists, err := storage.CheckProductExists(regionData.FilePath, oldProduct)
+		if err != nil {
+			fmt.Printf("[Servidor Hextech] Error al verificar producto en archivo: %v\n", err)
+			return &proto.ClockResponse{VectorClock: regionData.VectorClock}, err
 		}
 
-		// Registra en el archivo de logs
+		if !exists {
+			fmt.Printf("[Servidor Hextech] Producto no encontrado: Región=%s, Producto=%s\n", region, oldProduct)
+			return &proto.ClockResponse{VectorClock: regionData.VectorClock}, fmt.Errorf("Producto %s no encontrado en región %s", oldProduct, region)
+		}
+
+		err = storage.UpdateFile(regionData.FilePath, oldProduct, newProduct)
+		if err != nil {
+			fmt.Printf("[Servidor Hextech] Error al renombrar producto en archivo: %v\n", err)
+			return &proto.ClockResponse{VectorClock: regionData.VectorClock}, err
+		}
+
 		logEntry := fmt.Sprintf("RenombrarProducto %s %s %s", region, oldProduct, newProduct)
 		s.writeToLogFile(logEntry)
+		regionData.AddLog(logEntry, s.serverID)
 
 		fmt.Printf("[Servidor Hextech] Producto renombrado: Región=%s, ProductoAntiguo=%s, ProductoNuevo=%s\n", region, oldProduct, newProduct)
 		return &proto.ClockResponse{VectorClock: regionData.VectorClock}, nil
 	}
 
 	fmt.Printf("[Servidor Hextech] Error: Región no encontrada: %s\n", region)
-	return nil, fmt.Errorf("Región %s no encontrada", region)
+	return &proto.ClockResponse{VectorClock: make([]int32, len(s.peers)+1)}, fmt.Errorf("Región %s no encontrada", region)
 }
+
 
 func (s *HextechServer) UpdateProduct(ctx context.Context, req *proto.UpdateProductRequest) (*proto.ClockResponse, error) {
 	s.mu.Lock()
@@ -258,10 +245,9 @@ func (s *HextechServer) UpdateProduct(ctx context.Context, req *proto.UpdateProd
 
 		if err := storage.UpdateValueInFile(regionData.FilePath, region, product, quantity); err != nil {
 			fmt.Printf("[Servidor Hextech] Error al actualizar producto en archivo: %v\n", err)
-			return nil, err
+			return &proto.ClockResponse{VectorClock: regionData.VectorClock}, err
 		}
 
-		// Registra en el archivo de logs
 		logEntry := fmt.Sprintf("ActualizarValor %s %s %d", region, product, quantity)
 		s.writeToLogFile(logEntry)
 
@@ -270,12 +256,12 @@ func (s *HextechServer) UpdateProduct(ctx context.Context, req *proto.UpdateProd
 	}
 
 	fmt.Printf("[Servidor Hextech] Error: Región no encontrada: %s\n", region)
-	return nil, fmt.Errorf("Región %s no encontrada", region)
+	return &proto.ClockResponse{VectorClock: make([]int32, len(s.peers)+1)}, fmt.Errorf("Región %s no encontrada", region)
 }
 
 
 func (s *HextechServer) writeToLogFile(message string) {
-	logFilePath := fmt.Sprintf("HextechLogs_%d.txt", s.serverID) // Basado en el ID del servidor
+	logFilePath := fmt.Sprintf("HextechLogs_%d.txt", s.serverID)
 
 	f, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -289,8 +275,6 @@ func (s *HextechServer) writeToLogFile(message string) {
 	}
 }
 
-
-
 func (s *HextechServer) GetProductServer(ctx context.Context, req *proto.GetProductRequest) (*proto.ProductResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -298,20 +282,20 @@ func (s *HextechServer) GetProductServer(ctx context.Context, req *proto.GetProd
 	region := req.Region
 	product := req.Product
 
-	// Verifica si la región existe
 	if regionData, exists := s.storage[region]; exists {
-		// Busca el producto en el archivo de la región
 		quantity, err := storage.GetProductQuantity(regionData.FilePath, product)
 		if err != nil {
 			if err == storage.ErrProductNotFound {
 				fmt.Printf("[Servidor Hextech] Producto no encontrado: Región=%s, Producto=%s\n", region, product)
-				return nil, fmt.Errorf("Producto %s no encontrado en región %s", product, region)
+				return &proto.ProductResponse{
+					Quantity:    0,
+					VectorClock: regionData.VectorClock,
+				}, nil
 			}
 			fmt.Printf("[Servidor Hextech] Error al obtener producto: %v\n", err)
 			return nil, err
 		}
 
-		// Retorna la respuesta con la cantidad y el reloj vectorial
 		fmt.Printf("[Servidor Hextech] Producto encontrado: Región=%s, Producto=%s, Cantidad=%d\n", region, product, quantity)
 		return &proto.ProductResponse{
 			Quantity:    quantity,
@@ -319,7 +303,10 @@ func (s *HextechServer) GetProductServer(ctx context.Context, req *proto.GetProd
 		}, nil
 	}
 
-	// Región no encontrada
 	fmt.Printf("[Servidor Hextech] Región no encontrada: %s\n", region)
-	return nil, fmt.Errorf("Región %s no encontrada", region)
+	return &proto.ProductResponse{
+		Quantity:    0,
+		VectorClock: make([]int32, len(s.peers)+1),
+	}, fmt.Errorf("Región %s no encontrada", region)
 }
+

@@ -38,3 +38,33 @@ services:
       - "50053:50053"
     stdin_open: true
     tty: true
+
+  hextech1:
+    build:
+      context: ./MV1/hextech
+      dockerfile: Dockerfile
+    container_name: hextech1_container
+    ports:
+      - "5001:5001"
+    command: ["./server", "-id", "0", "-port", "5001", "-peers", "hextech2:5002,hextech3:5003"]
+
+
+  hextech2:
+    build:
+      context: ./MV2/hextech
+      dockerfile: Dockerfile
+    container_name: hextech2_container
+    ports:
+      - "5002:5002"
+    command: ["./server", "-id", "1", "-port", "5002", "-peers", "hextech1:5001,hextech3:5003"]
+
+
+  hextech3:
+    build:
+      context: ./MV3/hextech
+      dockerfile: Dockerfile
+    container_name: hextech3_container
+    ports:
+      - "5003:5003"
+    command: ["./server", "-id", "2", "-port", "5003", "-peers", "hextech1:5001,hextech2:5002"]
+
