@@ -18,7 +18,7 @@ func WriteToFile(filePath, record string) error {
 }
 
 func WriteAllToFile(filePath string, data map[string]string) error {
-    f, err := os.Create(filePath) // Crea o sobrescribe el archivo
+    f, err := os.Create(filePath)
     if err != nil {
         return err
     }
@@ -46,18 +46,18 @@ func UpdateFile(filePath, oldName, newName string) error {
 
 
 func RemoveFromFile(filePath, record string) error {
-	content, err := os.ReadFile(filePath) // Lee el archivo completo
+	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
 
 	lines := []string{}
 	for _, line := range strings.Split(string(content), "\n") {
-		if line != record && line != "" { // Filtra la línea a eliminar
+		if line != record && line != "" { 
 			lines = append(lines, line)
 		}
 	}
 
-	return os.WriteFile(filePath, []byte(strings.Join(lines, "\n")), 0644) // Sobrescribe el archivo
+	return os.WriteFile(filePath, []byte(strings.Join(lines, "\n")), 0644) 
 }
 

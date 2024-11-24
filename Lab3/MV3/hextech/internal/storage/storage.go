@@ -53,7 +53,6 @@ func GetProductQuantity(filePath, product string) (int32, error) {
 }
 
 
-// UpdateValueInFile actualiza o agrega un producto con su cantidad en el archivo
 func UpdateValueInFile(filePath,region string, product string, newQuantity int32) error {
 	content, err := os.ReadFile(filePath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -72,7 +71,7 @@ func UpdateValueInFile(filePath,region string, product string, newQuantity int32
 		}
 	}
 
-	if !updated { // Si no se encontró, agregarlo
+	if !updated { 
 		lines = append(lines, fmt.Sprintf("%s %s %d", region, product, newQuantity))
 	}
 
@@ -89,13 +88,12 @@ func RemoveProductFromFile(filePath, product string) error {
 	lines := strings.Split(string(content), "\n")
 	found := false
 
-	// Filtra las líneas que no contienen el producto
 	newLines := []string{}
 	for _, line := range lines {
 		parts := strings.Fields(line)
 		if len(parts) == 3 && parts[1] == product {
 			found = true
-			continue // No incluir esta línea en el archivo actualizado
+			continue 
 		}
 		newLines = append(newLines, line)
 	}
@@ -104,7 +102,6 @@ func RemoveProductFromFile(filePath, product string) error {
 		return ErrProductNotFound
 	}
 
-	// Sobreescribe el archivo con las líneas restantes
 	updatedContent := strings.Join(newLines, "\n")
 	return os.WriteFile(filePath, []byte(updatedContent), 0644)
 }
@@ -208,7 +205,7 @@ func CheckProductExists(filePath, product string) (bool, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return false, nil // Archivo no existe, por lo tanto el producto no existe
+			return false, nil 
 		}
 		return false, err
 	}
