@@ -174,7 +174,7 @@ func (s *HextechServer) DeleteProduct(ctx context.Context, req *proto.DeleteProd
 		if err != nil {
 			if err == storage.ErrProductNotFound {
 				fmt.Printf("[Servidor Hextech] Producto no encontrado: Región=%s, Producto=%s\n", region, product)
-				return &proto.ClockResponse{VectorClock: regionData.VectorClock}, fmt.Errorf("Producto %s no encontrado en región %s", product, region)
+				return &proto.ClockResponse{VectorClock: regionData.VectorClock}, nil
 			}
 			fmt.Printf("[Servidor Hextech] Error al intentar eliminar producto del archivo: %v\n", err)
 			return &proto.ClockResponse{VectorClock: regionData.VectorClock}, err
@@ -189,7 +189,7 @@ func (s *HextechServer) DeleteProduct(ctx context.Context, req *proto.DeleteProd
 	}
 
 	fmt.Printf("[Servidor Hextech] Región no encontrada: %s\n", region)
-	return &proto.ClockResponse{VectorClock: make([]int32, len(s.peers)+1)}, fmt.Errorf("Región %s no encontrada", region)
+	return &proto.ClockResponse{VectorClock: make([]int32, len(s.peers)+1)}, nil
 }
 
 
@@ -210,7 +210,7 @@ func (s *HextechServer) RenameProduct(ctx context.Context, req *proto.RenameProd
 
 		if !exists {
 			fmt.Printf("[Servidor Hextech] Producto no encontrado: Región=%s, Producto=%s\n", region, oldProduct)
-			return &proto.ClockResponse{VectorClock: regionData.VectorClock}, fmt.Errorf("Producto %s no encontrado en región %s", oldProduct, region)
+			return &proto.ClockResponse{VectorClock: regionData.VectorClock}, nil
 		}
 
 		err = storage.UpdateFile(regionData.FilePath, oldProduct, newProduct)
@@ -228,7 +228,7 @@ func (s *HextechServer) RenameProduct(ctx context.Context, req *proto.RenameProd
 	}
 
 	fmt.Printf("[Servidor Hextech] Error: Región no encontrada: %s\n", region)
-	return &proto.ClockResponse{VectorClock: make([]int32, len(s.peers)+1)}, fmt.Errorf("Región %s no encontrada", region)
+	return &proto.ClockResponse{VectorClock: make([]int32, len(s.peers)+1)}, nil
 }
 
 
@@ -256,7 +256,7 @@ func (s *HextechServer) UpdateProduct(ctx context.Context, req *proto.UpdateProd
 	}
 
 	fmt.Printf("[Servidor Hextech] Error: Región no encontrada: %s\n", region)
-	return &proto.ClockResponse{VectorClock: make([]int32, len(s.peers)+1)}, fmt.Errorf("Región %s no encontrada", region)
+	return &proto.ClockResponse{VectorClock: make([]int32, len(s.peers)+1)}, nil
 }
 
 
@@ -307,6 +307,6 @@ func (s *HextechServer) GetProductServer(ctx context.Context, req *proto.GetProd
 	return &proto.ProductResponse{
 		Quantity:    0,
 		VectorClock: make([]int32, len(s.peers)+1),
-	}, fmt.Errorf("Región %s no encontrada", region)
+	}, nil
 }
 
