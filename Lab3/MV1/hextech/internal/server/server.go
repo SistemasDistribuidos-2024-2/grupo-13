@@ -5,28 +5,40 @@ import (
 	"fmt"
 	"os"
 	"sync"
-
+	"crypto/sha256"
+	"encoding/hex"
 	"hextech/internal/storage"
 	"hextech/proto"
 )
 
-const logFilePath = "HextechLogs.txt"
 
 type HextechServer struct {
-	mu       sync.Mutex
-	storage  map[string]*storage.RegionData
-	serverID int
-	peers    []proto.HextechServiceClient
+	mu          sync.Mutex
+	storage     map[string]*storage.RegionData
+	serverID    int
+	peers       []proto.HextechServiceClient
+	appliedLogs map[string]bool // Logs ya aplicados
 
 	proto.UnimplementedHextechServiceServer
 }
 
+
+func generateLogHash(log string) string {
+	hash := sha256.Sum256([]byte(log))
+	return hex.EncodeToString(hash[:])
+}
+
 func NewHextechServer(serverID int) *HextechServer {
 	return &HextechServer{
-		storage:  make(map[string]*storage.RegionData),
-		serverID: serverID,
-		peers:    []proto.HextechServiceClient{},
+		storage:     make(map[string]*storage.RegionData),
+		serverID:    serverID,
+		peers:       []proto.HextechServiceClient{},
+		appliedLogs: make(map[string]bool),
 	}
+}
+
+func (s *HextechServer) getLogFilePath() string {
+	return fmt.Sprintf("HextechLogs_%d.txt", s.serverID)
 }
 
 func (s *HextechServer) AddPeer(peer proto.HextechServiceClient) {
@@ -59,21 +71,38 @@ func (s *HextechServer) PropagateChanges(ctx context.Context, req *proto.Propaga
 	defer s.mu.Unlock()
 
 	region := req.Region
+	fmt.Printf("[Servidor Hextech] Propagando cambios en la región [%s]\n", region)
 
 	// Verificar si la región existe; si no, crearla
 	if _, exists := s.storage[region]; !exists {
 		s.storage[region] = storage.NewRegionData(fmt.Sprintf("%s.txt", region), len(s.peers)+1)
-		// Crear el archivo de la región
 		err := os.WriteFile(s.storage[region].FilePath, []byte{}, 0644)
 		if err != nil {
 			fmt.Printf("[Servidor Hextech] Error al crear archivo de región [%s]: %v\n", region, err)
 			return nil, err
 		}
-		fmt.Printf("[Servidor Hextech] Región [%s] creada durante la propagación.\n", region)
 	}
 
 	regionData := s.storage[region]
-	regionData.ChangeLog = append(regionData.ChangeLog, req.ChangeLog...)
+	// Procesar cada log recibido
+	for _, log := range req.ChangeLog {
+		logHash := generateLogHash(log)
+
+		// Si el log ya fue procesado, omitirlo
+		if s.appliedLogs[logHash] {
+			continue
+		}
+
+		// Aplicar el log al archivo de la región
+		err := storage.ApplyLogToFile(regionData.FilePath, log, s.serverID)
+		if err != nil {
+			fmt.Printf("[Servidor Hextech] Error al aplicar log [%s]: %v\n", log, err)
+			return nil, err
+		}
+
+		// Marcar el log como aplicado
+		s.appliedLogs[logHash] = true
+	}
 
 	// Actualizar el reloj vectorial
 	for i, value := range req.VectorClock {
@@ -82,18 +111,22 @@ func (s *HextechServer) PropagateChanges(ctx context.Context, req *proto.Propaga
 		}
 	}
 
-	// Actualizar el archivo con los cambios propagados
-	for _, log := range req.ChangeLog {
-		err := storage.ApplyLogToFile(regionData.FilePath, log, s.serverID)
-		if err != nil {
-			fmt.Printf("[Servidor Hextech] Error al aplicar log a archivo [%s]: %v\n", region, err)
-			return nil, err
+	// Propagar los cambios a otros peers
+	for _, peer := range s.peers {
+		if peer != nil { // Asegurarse de que el peer esté conectado
+			go func(peer proto.HextechServiceClient) {
+				_, err := peer.PropagateChanges(context.Background(), req)
+				if err != nil {
+					fmt.Printf("[Servidor Hextech] Error al propagar cambios a un peer: %v\n", err)
+				}
+			}(peer)
 		}
 	}
 
 	fmt.Printf("[Servidor Hextech] Cambios propagados a la región [%s].\n", region)
 	return &proto.PropagationResponse{Status: "success"}, nil
 }
+
 
 
 
@@ -251,19 +284,22 @@ func (s *HextechServer) UpdateProduct(ctx context.Context, req *proto.UpdateProd
 }
 
 
-// writeToLogFile escribe un mensaje en el archivo central de logs
 func (s *HextechServer) writeToLogFile(message string) {
+	logFilePath := fmt.Sprintf("HextechLogs_%d.txt", s.serverID) // Basado en el ID del servidor
+
 	f, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		fmt.Printf("[Servidor Hextech] Error al abrir archivo de logs: %v\n", err)
+		fmt.Printf("[Servidor Hextech] Error al abrir archivo de logs [%s]: %v\n", logFilePath, err)
 		return
 	}
 	defer f.Close()
 
 	if _, err := f.WriteString(message + "\n"); err != nil {
-		fmt.Printf("[Servidor Hextech] Error al escribir en archivo de logs: %v\n", err)
+		fmt.Printf("[Servidor Hextech] Error al escribir en archivo de logs [%s]: %v\n", logFilePath, err)
 	}
 }
+
+
 
 func (s *HextechServer) GetProductServer(ctx context.Context, req *proto.GetProductRequest) (*proto.ProductResponse, error) {
 	s.mu.Lock()

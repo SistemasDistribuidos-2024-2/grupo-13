@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"strconv"
 )
 
 
@@ -111,16 +112,14 @@ func RemoveProductFromFile(filePath, product string) error {
 func ApplyLogToFile(filePath string, log string, serverID int) error {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
-		// Si el archivo no existe, crear uno nuevo
 		if errors.Is(err, os.ErrNotExist) {
 			return os.WriteFile(filePath, []byte(log+"\n"), 0644)
 		}
 		return err
 	}
 
-	lines := strings.Split(string(content), "\n") // Divide el contenido del archivo en líneas
+	lines := strings.Split(string(content), "\n")
 
-	// Procesar el log para aplicar los cambios
 	parts := strings.Fields(log)
 	if len(parts) < 4 {
 		return fmt.Errorf("log mal formado: %s", log)
@@ -154,7 +153,7 @@ func ApplyLogToFile(filePath string, log string, serverID int) error {
 		for _, line := range lines {
 			lineParts := strings.Fields(line)
 			if len(lineParts) == 3 && lineParts[1] == product {
-				continue // Omitir esta línea
+				continue
 			}
 			newLines = append(newLines, line)
 		}
@@ -185,26 +184,13 @@ func ApplyLogToFile(filePath string, log string, serverID int) error {
 		return fmt.Errorf("acción desconocida: %s", action)
 	}
 
-	// Escribir los cambios de vuelta al archivo de la región
 	updatedContent := strings.Join(lines, "\n")
-	err = os.WriteFile(filePath, []byte(updatedContent+"\n"), 0644)
-	if err != nil {
-		return err
-	}
-
-	// Registrar en el archivo de logs individual
-	err = appendToLogFile(serverID, fmt.Sprintf("%s %s %s %d", action, region, product, quantity))
-	if err != nil {
-		return fmt.Errorf("error al registrar en el log del servidor [%d]: %v", serverID, err)
-	}
-
-	return nil
+	return os.WriteFile(filePath, []byte(updatedContent+"\n"), 0644)
 }
 
 
-func appendToLogFile(serverID int, entry string) error {
-	logFilePath := fmt.Sprintf("HextechLogs_%d.txt", serverID) // Archivo de logs individual
 
+func appendToLogFile(logFilePath string, entry string) error {
 	f, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("error al abrir el archivo de logs [%s]: %v", logFilePath, err)

@@ -21,7 +21,7 @@ func main() {
 	flag.Parse()
 
 	// Validar los argumentos
-	if *serverID <= 0 {
+	if *serverID < 0 {
 		log.Fatalf("SERVER_ID debe ser un valor positivo. Valor recibido: %d", *serverID)
 	}
 
@@ -47,23 +47,26 @@ func main() {
 
 	// Conectar a los peers si se especificaron
 	if *peerPorts != "" {
-		for _, peerPort := range strings.Split(*peerPorts, ",") {
-			if peerPort != *port { // No conectarse a sí mismo
+		peers := strings.Split(*peerPorts, ",") // Dividir la cadena en una lista
+		for _, peerPort := range peers {
+			if peerPort != *port { // Evitar conectarse a sí mismo
 				conn, err := grpc.Dial("localhost:"+peerPort, grpc.WithInsecure())
 				if err == nil {
 					hexServer.AddPeer(proto.NewHextechServiceClient(conn))
 					fmt.Printf("[Servidor Hextech] Conectado al peer en el puerto [%s]\n", peerPort)
 				} else {
-					fmt.Printf("[Servidor Hextech] No se pudo conectar al peer en el puerto [%s]: %v\n", peerPort, err)
+					fmt.Printf("[Servidor Hextech] Error al conectar con el peer en el puerto [%s]: %v\n", peerPort, err)
 				}
 			}
 		}
 	}
+
+	// Iniciar la propagación en segundo plano
 	go hexServer.StartPropagation()
+
 	// Iniciar el servidor gRPC
 	fmt.Printf("[Servidor Hextech] Ejecutándose en el puerto [%s] con ID [%d]...\n", *port, *serverID)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("Error al iniciar el servidor: %v", err)
 	}
 }
-

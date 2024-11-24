@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"strconv"
 )
 
 
@@ -108,15 +109,19 @@ func RemoveProductFromFile(filePath, product string) error {
 	return os.WriteFile(filePath, []byte(updatedContent), 0644)
 }
 
-func ApplyLogToFile(filePath, log string) error {
+func ApplyLogToFile(filePath string, log string, serverID int) error {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return os.WriteFile(filePath, []byte(log+"\n"), 0644)
+		}
 		return err
 	}
 
 	lines := strings.Split(string(content), "\n")
+
 	parts := strings.Fields(log)
-	if len(parts) < 3 {
+	if len(parts) < 4 {
 		return fmt.Errorf("log mal formado: %s", log)
 	}
 
@@ -128,20 +133,74 @@ func ApplyLogToFile(filePath, log string) error {
 		fmt.Sscanf(parts[3], "%d", &quantity)
 	}
 
+	updated := false
 	switch action {
 	case "AgregarProducto":
-		return UpdateValueInFile(filePath, region, product, quantity)
+		for i, line := range lines {
+			lineParts := strings.Fields(line)
+			if len(lineParts) == 3 && lineParts[1] == product {
+				oldQuantity, _ := strconv.Atoi(lineParts[2])
+				lines[i] = fmt.Sprintf("%s %s %d", region, product, oldQuantity+int(quantity))
+				updated = true
+				break
+			}
+		}
+		if !updated {
+			lines = append(lines, fmt.Sprintf("%s %s %d", region, product, quantity))
+		}
 	case "BorrarProducto":
-		return RemoveProductFromFile(filePath, product)
+		newLines := []string{}
+		for _, line := range lines {
+			lineParts := strings.Fields(line)
+			if len(lineParts) == 3 && lineParts[1] == product {
+				continue
+			}
+			newLines = append(newLines, line)
+		}
+		lines = newLines
 	case "RenombrarProducto":
 		if len(parts) < 4 {
 			return fmt.Errorf("log mal formado para renombrar: %s", log)
 		}
 		newProduct := parts[3]
-		return UpdateFile(filePath, product, newProduct)
+		for i, line := range lines {
+			lineParts := strings.Fields(line)
+			if len(lineParts) == 3 && lineParts[1] == product {
+				lines[i] = fmt.Sprintf("%s %s %s", region, newProduct, lineParts[2])
+				updated = true
+				break
+			}
+		}
 	case "ActualizarValor":
-		return UpdateValueInFile(filePath, region, product, quantity)
+		for i, line := range lines {
+			lineParts := strings.Fields(line)
+			if len(lineParts) == 3 && lineParts[1] == product {
+				lines[i] = fmt.Sprintf("%s %s %d", region, product, quantity)
+				updated = true
+				break
+			}
+		}
 	default:
 		return fmt.Errorf("acción desconocida: %s", action)
 	}
+
+	updatedContent := strings.Join(lines, "\n")
+	return os.WriteFile(filePath, []byte(updatedContent+"\n"), 0644)
 }
+
+
+
+func appendToLogFile(logFilePath string, entry string) error {
+	f, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("error al abrir el archivo de logs [%s]: %v", logFilePath, err)
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(entry + "\n")
+	if err != nil {
+		return fmt.Errorf("error al escribir en el archivo de logs [%s]: %v", logFilePath, err)
+	}
+	return nil
+}
+
