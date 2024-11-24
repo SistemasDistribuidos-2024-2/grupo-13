@@ -4,23 +4,23 @@ Este proyecto implementa un sistema distribuido utilizando Docker y Docker Compo
 ### Instrucciones de ejecucion:
 Ejecutar `make docker-(programa a ejecutar)` dentro de la carpeta `Lab3` que esta cargada en el repositorio, las distribucion de las maquinas es:
 
-- MV1:
-  - Broker: `docker-broker`
-
-
-- MV2:
+- MV1 (dist049):
   - Supervisor 1: `docker-s1`
   - Servidor hextech 1: `docker-h1`
 
 
-- MV3:
+- MV2 (dist050):
   - Supervisor 2: `docker-s2`
   - Servidor hextech 2: `docker-h2`
 
 
-- MV4:
+- MV3 (dist051):
   - Jayce: `docker-jayce`
   - Servidor hextech 3: `docker-h3`
+
+
+- MV4 (dist052):
+  - Broker: `docker-broker`
 
 ### El orden de ejecucion es (esperar que se monte completamente):
 
