@@ -14,12 +14,12 @@ import (
 )
 
 const (
-	port          = ":50050"          // Puerto donde el broker escucha
-	arbitraryAddr = "localhost:50052" // Dirección del servidor arbitrario
+	port          = ":50050"                   // Puerto donde el broker escucha
+	arbitraryAddr = "hextech1_container:50054" // Dirección del servidor arbitrario
 )
 
 var (
-	serverAddresses = []string{"localhost:50052", "localhost:50053", "localhost:50054"}
+	serverAddresses = []string{"hextech1_container:50054", "hextech2_container:50055", "hextech3_container:50056"}
 	mutex           sync.Mutex
 )
 

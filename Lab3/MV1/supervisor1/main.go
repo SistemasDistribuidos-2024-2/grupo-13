@@ -11,10 +11,11 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 const (
-	brokerAddress = "localhost:50050" // Dirección del broker
+	brokerAddress = "broker_container:50050" // Dirección del broker
 )
 
 var vectorClocks = make(map[string][]int32) // Almacén de relojes vectoriales por región
@@ -38,7 +39,8 @@ func main() {
 
 // runSupervisor configura y ejecuta el supervisor según el ID especificado
 func runSupervisor(supervisorID int) {
-	// Configurar el puerto según el supervisor ID
+	time.Sleep(1 * time.Second)
+
 	port := 50050 + supervisorID
 	log.Printf("Supervisor %d inicializado en el puerto %d\n", supervisorID, port)
 

@@ -9,22 +9,23 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"google.golang.org/grpc"
 	pb "grpc-server/proto/grpc-server/proto"
 )
 
-const brokerAddress = "localhost:50050" // Dirección del broker
+const brokerAddress = "broker_container:50050" // Dirección del broker
 
 var mutex sync.Mutex
 var serverRegions = map[string]string{
-	"localhost:50052": "S1",
-	"localhost:50053": "S2",
-	"localhost:50054": "S3",
+	"hextech1_container:50054": "S1",
+	"hextech2_container:50055": "S2",
+	"hextech3_container:50056": "S3",
 }
 
 func main() {
-	// Menú interactivo para realizar consultas
+	time.Sleep(1 * time.Second)
 	for {
 		fmt.Println("\nMenú de Jayce:")
 		fmt.Println("1. Consultar producto")
