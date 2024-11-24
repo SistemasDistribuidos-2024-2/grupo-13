@@ -9,7 +9,6 @@ import (
 	"hextech/proto"
 )
 
-// mergeWithPeers coordina el merge entre servidores utilizando la estrategia basada en ID.
 func (s *HextechServer) mergeWithPeers(peers []proto.HextechServiceClient) {
 	for region, localData := range s.storage {
 		mergedClock := make([]int32, len(localData.VectorClock))
@@ -26,24 +25,20 @@ func (s *HextechServer) mergeWithPeers(peers []proto.HextechServiceClient) {
 				continue
 			}
 
-			// Comparar relojes vectoriales y determinar el servidor dominante
 			for i := range response.VectorClock {
 				if response.VectorClock[i] > mergedClock[i] {
 					mergedClock[i] = response.VectorClock[i]
 				}
 			}
 
-			// Verificar si hay un servidor con menor ID
 			if response.VectorClock[s.serverID] < mergedClock[s.serverID] {
 				isDominant = false
 			}
 
-			// Combinar los logs del peer
 			mergedLog = append(mergedLog, response.ChangeLog...)
 		}
 
 		if isDominant {
-			// Este servidor es dominante, realiza el merge
 			fmt.Printf("Servidor %d es dominante para la región %s\n", s.serverID, region)
 			resolvedRecords := resolveConflicts(mergedLog)
 			storage.WriteAllToFile(localData.FilePath, resolvedRecords)
@@ -73,7 +68,7 @@ func resolveConflicts(changeLog []string) map[string]string {
     resolved := make(map[string]string)
 
     for _, entry := range changeLog {
-        parts := strings.Fields(entry) // Divide la entrada en palabras
+        parts := strings.Fields(entry) 
         if len(parts) < 3 {
             continue
         }
@@ -84,18 +79,15 @@ func resolveConflicts(changeLog []string) map[string]string {
 
         switch action {
         case "AgregarProducto", "ActualizarValor":
-            // Usa el último valor encontrado
             if len(parts) > 3 {
                 resolved[fmt.Sprintf("%s %s", region, product)] = parts[3]
             }
         case "RenombrarProducto":
-            // Cambia el nombre del producto en los registros
             if len(parts) > 3 {
                 resolved[fmt.Sprintf("%s %s", region, parts[3])] = resolved[fmt.Sprintf("%s %s", region, product)]
                 delete(resolved, fmt.Sprintf("%s %s", region, product))
             }
         case "BorrarProducto":
-            // Elimina el producto del registro
             delete(resolved, fmt.Sprintf("%s %s", region, product))
         }
     }

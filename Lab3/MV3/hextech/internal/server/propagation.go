@@ -37,7 +37,6 @@ func (s *HextechServer) StartPropagation() {
 			}
 		}
 
-		// Limpia los logs después de la propagación
 		for _, regionData := range s.storage {
 			regionData.ClearLogs()
 		}
