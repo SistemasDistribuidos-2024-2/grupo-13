@@ -204,3 +204,22 @@ func appendToLogFile(logFilePath string, entry string) error {
 	return nil
 }
 
+func CheckProductExists(filePath, product string) (bool, error) {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return false, nil // Archivo no existe, por lo tanto el producto no existe
+		}
+		return false, err
+	}
+
+	lines := strings.Split(string(content), "\n")
+	for _, line := range lines {
+		parts := strings.Fields(line)
+		if len(parts) >= 2 && parts[1] == product {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
