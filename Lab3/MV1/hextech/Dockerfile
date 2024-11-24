@@ -11,4 +11,4 @@ RUN go build -o server ./cmd/server/main.go
 
 EXPOSE 5001
 
-CMD ["./server", "-id", "0", "-port", "5001", "-peers", "localhost:5002,localhost:5003"]
+CMD ["./server", "-id", "0", "-port", "50054", "-peers", "hextech2_container:50055,hextech3_container:50056"]
