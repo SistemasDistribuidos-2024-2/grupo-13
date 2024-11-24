@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  broker:
+    build:
+      context: ./MV4/broker
+      dockerfile: Dockerfile
+    container_name: broker_container
+    ports:
+      - "50050:50050"
+
+  supervisor1:
+    build:
+      context: ./MV1/supervisor1
+      dockerfile: Dockerfile
+    container_name: supervisor1_container
+    ports:
+      - "50051:50051"
+    stdin_open: true
+    tty: true
+
+  supervisor2:
+    build:
+      context: ./MV2/supervisor2
+      dockerfile: Dockerfile
+    container_name: supervisor2_container
+    ports:
+      - "50052:50052"
+    stdin_open: true
+    tty: true
+
+  jayce:
+    build:
+      context: ./MV3/jayce
+      dockerfile: Dockerfile
+    container_name: jayce_container
+    ports:
+      - "50053:50053"
+    stdin_open: true
+    tty: true
