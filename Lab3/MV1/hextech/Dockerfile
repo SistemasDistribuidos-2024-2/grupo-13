@@ -11,4 +11,4 @@ RUN go build -o server ./cmd/server/main.go
 
 EXPOSE 5001
 
-CMD ["./server", "-id", "0", "-port", "50054", "-peers", "dist051:50055,dist052:50056"]
+CMD ["./server", "-id", "0", "-port", "50054", "-peers", "dist050:50055,dist051:50056"]

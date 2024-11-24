@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	brokerAddress = "dist049:50050"
+	brokerAddress = "dist052:50050"
 )
 
 var vectorClocks = make(map[string][]int32)

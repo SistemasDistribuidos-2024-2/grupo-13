@@ -15,13 +15,13 @@ import (
 	pb "grpc-server/proto/grpc-server/proto"
 )
 
-const brokerAddress = "dist040:50050"
+const brokerAddress = "dist052:50050"
 
 var mutex sync.Mutex
 var serverRegions = map[string]string{
-	"dist050:50054": "S1",
-	"dist051:50055": "S2",
-	"dist052:50056": "S3",
+	"dist049:50054": "S1",
+	"dist050:50055": "S2",
+	"dist051:50056": "S3",
 }
 
 func main() {

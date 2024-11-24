@@ -15,11 +15,11 @@ import (
 
 const (
 	port          = ":50050"
-	arbitraryAddr = "dist050:50054"
+	arbitraryAddr = "dist049:50054"
 )
 
 var (
-	serverAddresses = []string{"dist050:50054", "dist051:50055", "dist052:50056"}
+	serverAddresses = []string{"dist049:50054", "dist050:50055", "dist051:50056"}
 	mutex           sync.Mutex
 )
 
