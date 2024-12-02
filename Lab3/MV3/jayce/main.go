@@ -21,7 +21,7 @@ var mutex sync.Mutex
 var serverRegions = map[string]string{
 	"dist049:50054": "S1",
 	"dist050:50055": "S2",
-	"dist051:50056": "S3",
+	"dist001:50056": "S3",
 }
 
 func main() {

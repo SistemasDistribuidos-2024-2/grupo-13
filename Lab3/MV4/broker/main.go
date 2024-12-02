@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	serverAddresses = []string{"dist049:50054", "dist050:50055", "dist051:50056"}
+	serverAddresses = []string{"dist049:50054", "dist050:50055", "dist001:50056"}
 	mutex           sync.Mutex
 )
 
